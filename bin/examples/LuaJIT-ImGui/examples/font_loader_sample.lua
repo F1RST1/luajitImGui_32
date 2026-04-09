@@ -188,6 +188,7 @@ function win:draw(ig)
 	
 		local Fonts = ig.GetIO().Fonts.Fonts
 		font1 = Fonts.Data[Fonts.Size-1]
+		local font0 = Fonts.Data[0]
 		if fontcps then
 			ig.Text(font1:GetDebugName());
 			ig.SameLine();ig.Text(#fontcps.." visible glyphs")
@@ -230,7 +231,10 @@ function win:draw(ig)
 										local st = codepoint_to_utf8(cp)
 										print("add",cp,string.byte(st, 1, #st))
 									end
-									if ig.IsItemHovered() then ig.SetTooltip("cp: %d",ffi.new("int",cp)) end
+									ig.PushFont(font0, 0)
+									--if ig.IsItemHovered() then ig.SetTooltip(string.format("cp: %d",ffi.new("int",cp))) end
+									if ig.IsItemHovered() then ig.SetTooltip(string.format("cp: %d",cp)) end
+									ig.PopFont()
 									if not ((N)%cols == 0) then ig.SameLine() end
 								end
 							end
@@ -271,7 +275,7 @@ function win:draw(ig)
 	ig.Begin("test_font")
 	if font1 then ig.Text(font1:GetDebugName()) end
 	ig.PushFont(font1, 0)--fontsize[0])--fontscale[0] * ig.GetStyle().FontSizeBase)--0)
-	ig.InputTextMultiline("test_i",tttest,#test_text,ig.ImVec2(-ig.FLT_MIN,ig.GetTextLineHeight() * 11))
+	ig.InputTextMultiline("test_i",tttest,#test_text+1,ig.ImVec2(-ig.FLT_MIN,ig.GetTextLineHeight() * 11))
 	ig.PopFont()
 	ig.End()
 	ig.ShowDemoWindow()

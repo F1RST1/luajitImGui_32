@@ -3,9 +3,12 @@ require"anima"
 local mat = require"anima.matrixffi"
 local M = {}
 
+--to iterate an array circular way
+--a is index, b is polygon (array) len
 local function mod(a,b)
 	return ((a-1)%b)+1
 end
+M.mod = mod
 --CCW 1 CW -1
 local function rightturn_2det(a,b,c)
 	return (b.x*c.y - b.y*c.x - (a.x*c.y - a.y*c.x) + a.x*b.y - a.y*b.x) --< 0
@@ -25,13 +28,16 @@ M.TArea = TArea
 
 
 local acos = math.acos
+--CW means CW polygons so that internal angles are measured CCW and viceversa
+--CW false is angle to the left of p1,p2,p3. CW true is to the right
 local function Angle(p1,p2,p3,CW)
 	if not CW then p1,p3 = p3,p1 end
+	--if CW then p1,p3 = p3,p1 end
 	assert(p1~=p2 and p2~=p3) --would give nan as angle
-	if p1==p2 or p2==p3 then
-		print("Angle called with p1==p2 or p2==p3")
-		return math.pi*0.5,true,0,0
-	end
+	-- if p1==p2 or p2==p3 then
+		-- print("Angle called with p1==p2 or p2==p3")
+		-- return math.pi*0.5,true,0,0
+	-- end
 	
 	local a = p1-p2
 	local b = p3-p2
@@ -52,12 +58,101 @@ local function Angle(p1,p2,p3,CW)
 end
 
 M.Angle = Angle
+local atan2 = math.atan2
+--CW means CW polygons so that internal angles are measured CCW and viceversa
+local function tanAngle(p1,p2,p3,CW)
+	if CW then p1,p3 = p3,p1 end
+	assert(p1~=p2 and p2~=p3) --would give nan as angle
+	local a = p1-p2
+	local b = p3-p2
+	--local normprod = a:norm()*b:norm()
+	local cose = a*b--/(normprod)
+	local sine = Sign(p1,p2,p3)--/normprod
+	local ang = atan2(sine,cose)
+	return ang<0 and 2*math.pi+ang or ang
+end
 
-function M.PointInCone(p,a,b,c,d)
+--test Angle
+-- local v0 = mat.vec2(0,0)
+-- local v1 = mat.vec2(1,0)
+-- local v2 = mat.vec2(1,1)
+-- print(Angle(v0,v1,v2,false)*180/math.pi)
+--[[
+local p2 = mat.vec2(0,0)
+for i=1,1000 do
+	local p1 = mat.vec2(math.random(-1,1),math.random(-1,1))
+	local p3 = mat.vec2(math.random(-1,1),math.random(-1,1))
+	if p2~=p1 and p2~=p3 then
+		local ang = Angle(p1,p2,p3)
+		local ang2 = tanAngle(p1,p2,p3)
+		local ang3 = ang2
+		if ang3 < 0 then ang3 = 2*math.pi+ang3 end
+	print(ang,ang3,ang2)
+	end
+end
+--]]
+--[[
+
+local p2 = mat.vec2(0,0)
+local deg = math.deg
+local N = 100
+for i=0,N do
+	local p1 = mat.vec2(1,0)--math.random(-1,1),math.random(-1,1))
+	--local ang = math.random()*math.pi*2
+	local ang = i*math.pi*2/N
+	local p3 = mat.vec2(math.cos(ang),math.sin(ang))
+	local ang4 = atan2(p3.y,p3.x)
+	if p2~=p1 and p2~=p3 then
+		local ang1 = Angle(p1,p2,p3,true)
+		local ang2 = tanAngle(p1,p2,p3,true)
+		local ang3 = ang2
+		if ang3 < 0 then ang3 = 2*math.pi+ang3 end
+		--print(ang,ang4,ang1,ang3,ang2)
+		print(deg(ang),deg(ang4),deg(ang1),deg(ang2))--,deg(ang3))
+		--print(deg(ang),deg(ang4),p3)
+	end
+end
+print(deg(atan2(1,1)))
+print(deg(atan2(2,2)))
+print(deg(atan2(3,3)))
+--]]
+--[[
+
+local p2 = mat.vec2(0,0)
+local p1 = mat.vec2(1,0)--math.random(-1,1),math.random(-1,1))
+local deg = math.deg
+local N = 100000
+local t1 = secs_now()
+for i=0,N do
+	local ang = i*math.pi*2/N
+	local p3 = mat.vec2(math.cos(ang),math.sin(ang))
+	--local ang4 = atan2(p3.y,p3.x)
+	local ang1 = Angle(p1,p2,p3)
+	--local ang2 = tanAngle(p1,p2,p3)
+end
+print("done in", secs_now()-t1)
+
+--]]
+
+--p is right to ab and left to cd
+function M.PointInQuadrant(p,a,b,c,d)
 	local sab = Sign(a,b,p)
 	local scd = Sign(c,d,p)
 	return (sab < 0) and (scd > 0)
 end
+--p is left ab and left bc
+function M.PointInCone(p,a,b,c)
+	local sab = Sign(a,b,p)
+	local sbc = Sign(b,c,p)
+	return (sab > 0) and (sbc > 0)
+end
+
+-- local a = mat.vec2(0,0)
+-- local b = mat.vec2(2,0)
+-- local c = mat.vec2(3,1)
+-- local d = mat.vec2(1,-1)
+
+-- print("InCone",M.PointInCone(d,a,b,c))
 
 --say if interiors of segments a-b c-d overlap
 local function SegmentIntersect(a,b,c,d)
@@ -125,9 +220,9 @@ end
 M.SegmentBeginIntersect = SegmentBeginIntersect
 
 -- local a = mat.vec2(0,0)
--- local b = mat.vec2(0,1)
--- local c = mat.vec2(0,0)
--- local d = mat.vec2(0,1)
+-- local b = mat.vec2(2,0)
+-- local c = mat.vec2(1,1)
+-- local d = mat.vec2(1,2)
 -- returns the point where a SegmentIntersect happens
 local function IntersecPoint(a,b,c,d)
 	local den = (a.x - b.x)*(c.y - d.y) - (a.y - b.y)*(c.x - d.x)
@@ -141,7 +236,7 @@ end
 --print(IntersecPoint(a,b,c,d))
 M.IntersecPoint = IntersecPoint
 
---returns point, true is not paralled, and t should be 0<=t>=1 for being inside segment
+--returns point, true is not paralled, and t should be 0<=t>=1 for being inside segment ab
 function M.IntersecPoint2(a,b,c,d)
 	local den = (a.x - b.x)*(c.y - d.y) - (a.y - b.y)*(c.x - d.x)
 	if den==0 then return 0,false end
@@ -150,12 +245,64 @@ function M.IntersecPoint2(a,b,c,d)
 	
 	return a + t*(b - a), true, t
 end
+--faster?
+function M.IntersecPoint2(a,b,c,d)
+	local cdx = (c.x - d.x)
+	local cdy = (c.y - d.y)
+	local den = (a.x - b.x)*cdy - (a.y - b.y)*cdx
+	if den==0 then return 0,false end
+	local num = (a.x - c.x)*cdy - (a.y - c.y)*cdx
+	local t = num/den
+	
+	return a + t*(b - a), true, t
+end
+function M.SegmentIntersecPoint(a,b,c,d,interior)
+	local cymdy = (c.y-d.y)
+	local cxmdx = (c.x-d.x)
+	local axmbx = (a.x-b.x)
+	local aymcy = (a.y-c.y)
+	local aymby = (a.y-b.y)
+	local axmcx = (a.x-c.x)
+	-- local A = (a.x-c.x)*(c.y-d.y)-(a.y-c.y)*(c.x-d.x)
+	-- local B = (a.x-b.x)*(c.y-d.y)-(a.y-b.y)*(c.x-d.x)
+	-- local C = (a.x-b.x)*(a.y-c.y)-(a.y-b.y)*(a.x-c.x)
+	-- local D = (a.x-b.x)*(c.y-d.y)-(a.y-b.y)*(c.x-d.x)
+	
+	local A = axmcx*cymdy-aymcy*cxmdx
+	local B = axmbx*cymdy-aymby*cxmdx
+	if B==0 then return false end
+	local C = axmbx*aymcy-aymby*axmcx
+	local D = axmbx*cymdy-aymby*cxmdx
+	if D==0 then return false end
+	local t = A/B
+	local u = -C/D
+	
+	-- local pt,ok,tt = M.IntersecPoint2(a,b,c,d)
+	-- if tt~=t then print("SegmentIntersecPoint",t,tt) end
+	-- local pt,ok,uu = M.IntersecPoint2(c,d,a,b)
+	-- if uu~=u then print("SegmentIntersecPoint",u,uu) end
+	if interior then
+		if t>0 and t<1 and u>0 and u<1 then
+			--return true,mat.vec2(a.x+t*(b.x-a.x),a.y+t*(b.y-a.y))
+			return true,mat.vec2(a.x-t*axmbx,a.y-t*aymby),t,u
+		else
+			return false
+		end
+	else
+		if t>=0 and t<=1 and u>=0 and u<=1 then
+			--return true,mat.vec2(a.x+t*(b.x-a.x),a.y+t*(b.y-a.y))
+			return true,mat.vec2(a.x-t*axmbx,a.y-t*aymby),t,u
+		else
+			return false
+		end
+	end
+end
 -- local a = mat.vec2(0,0)
 -- local b = mat.vec2(1,0)
 -- local c = mat.vec2(0.5,0)
 -- local d = mat.vec2(1.5,0)
 -- print(M.SegmentIntersectC(a,b,c,d))
--- print(M.IntersecPoint(a,b,c,d))
+--print(M.IntersecPoint2(a,b,c,d))
 --tries to get the same as calling IntersecPoint2 twice
 function M.IntersecPoint3(a,b,c,d)
 	local den = (a.x - b.x)*(c.y - d.y) - (a.y - b.y)*(c.x - d.x)
@@ -247,7 +394,7 @@ local function IsPointInPoly(P, p)
 	P[#P] = nil
     return c;
 end
-
+M.IsPointInPolyX = IsPointInPoly
 --crossing number algo
 --http://geomalgorithms.com/a03-_inclusion.html
 local function IsPointInPolyCn(V,P)
@@ -291,6 +438,7 @@ local function IsPointInPolyWn(V,P)
 end
 
 M.IsPointInPoly = IsPointInPolyCn
+M.IsPointInPolyCn = IsPointInPolyCn
 M.IsPointInPolyWn = IsPointInPolyWn
 
 
@@ -381,9 +529,16 @@ function M.lexicografic_compare(a,b)
 	end
 	
 local algo = require"anima.algorithm.algorithm"
-function M.lexicografic_sort(P)
-	algo.quicksort(P,1,#P,M.lexicografic_compare)
+function M.lexicografic_sort(P,doindexes)
 	P.sorted = true
+	if doindexes then
+		local inds = {}
+		for i=1,#P do inds[i]=i end
+		algo.quicksort_mirror(P,inds,1,#P,M.lexicografic_compare)
+		return inds
+	else
+		algo.quicksort(P,1,#P,M.lexicografic_compare)
+	end
 end
 
 --helper binary search

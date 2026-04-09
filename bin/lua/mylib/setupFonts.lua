@@ -30,6 +30,8 @@ function setupFonts(pio)
   local fontTbl = {
                    {fontName="meiryo.ttc",  point=14.5, fontNo=0, title="メイリオ"}     -- Windows7, 8
                   ,{fontName="YuGothM.ttc", point=11.5, fontNo=0, title="ゆうゴシック"} -- Windows10, 11
+                  ,{fontName="Msyh.ttc",    point=11.5, fontNo=0, title="Microsoft YaHei UI"} -- China
+                  ,{fontName="Msyjh.ttc",   point=11.5, fontNo=0, title="Microsoft JhengHei UI"} -- Taiwan, Hongkong
                   ,{fontName="segoeuil.ttf",point=14.0, fontNo=0, title="Seoge UI"}     -- English region standard font
                   }
   local theFONT = nil

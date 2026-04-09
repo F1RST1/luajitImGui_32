@@ -30,14 +30,11 @@ local function Editor(GL,updatefunc1,args)
 	local numsplines = 0
 	M.sccoors = {}
 	M.ps = {}
-	M.triangulation = {}
 	M.alpha = {}
 	M.divs = {}
+	local action = 1
 	--local updatefunc = updatefunc or function() end
 	local updatefunc = function(E,...)
-			if E.NM.curr_spline > 0 then
-				E:triangulate(E.NM.curr_spline);
-			end
 			if updatefunc1 then updatefunc1(E, ...) end
 	end
 	
@@ -46,25 +43,15 @@ local function Editor(GL,updatefunc1,args)
 	
 	local vars = {
 	{"curr_spline",0,guitypes.valint,{min=0,max=numsplines},function() curr_hole[0] = 0 end},
-	{"newspline",0,guitypes.button,function(this) 
-		M:newspline() end},
-	{"newhole",0,guitypes.button,function(this) 
-		M:newhole() end,{sameline=true}},
+	{"newspline",0,guitypes.button,function(this) M:newspline() end},
+	{"delete spline",0,guitypes.button,function(this) M:deletespline() end, {sameline=true}},
+	{"newhole",0,guitypes.button,function(this) M:newhole() end},
+	{"delete hole",0,guitypes.button,function(this) M:deletehole() end,{sameline=true}},
 	{"orientation",0,guitypes.button,function() M:change_orientation(); M:process_all() end},
 	{"rotate",0,guitypes.button,function() M:rotate(); M:process_all() end,{sameline=true}},
 	{"set_last",0,guitypes.toggle},
-	{"clear spline",0,guitypes.button,function(this) 
-			M:clearshape()
-		end,
-		{sameline=true}},
-	{"delete spline",0,guitypes.button,function(this) 
-			M:deletespline()
-		end,
-		{sameline=true}},
-	{"points",1,guitypes.slider_enum,{"nil","set","edit","clear"}},
+	{"clear spline",0,guitypes.button,function(this) M:clearshape() end,{sameline=true}},
 	}
-	
-	if args.region then table.insert(vars,{"drawregion",false,guitypes.toggle,function() updatefunc(M) end}) end
 	
 	--for converting from window coordinates to GL.fbo coordinates
 	--from imgui inverted Y
@@ -82,6 +69,7 @@ local function Editor(GL,updatefunc1,args)
 		return ig.ImVec2(X1,sh-Y1) + mvp.Pos
 	end
 	local function PolyArrow(dl, points, numpoints, color)
+		--do return end
 		local lenh = 10
 		local lena = 1/math.sqrt(3)
 		for i=0,numpoints-2 do
@@ -99,13 +87,6 @@ local function Editor(GL,updatefunc1,args)
 		local vecb = ig.ImVec2(-vec.y,vec.x)*lena
 		dl:AddTriangleFilled(points[0], points[0] + vec + veca, points[0] + vec + vecb, color)
 	end
-	local function DrawTriangulation(dl, trian,color)
-		--print"DrawTriangulation"
-		local pointsI = {}
-		for i=1,#trian.points do local p = trian.points[i];pointsI[i-1] = ViewportToScreen(p.x, p.y) end
-		local tr = trian.tr
-		for i=1,#tr,3 do dl:AddTriangleFilled(pointsI[tr[i]], pointsI[tr[i+1]], pointsI[tr[i+2]],color) end
-	end
 	local function ShowSplines(NM)
 		--if numsplines==0 then return end
 		--if NM.curr_spline == 0 then return end
@@ -114,24 +95,9 @@ local function Editor(GL,updatefunc1,args)
 		local dl = ig.GetBackgroundDrawList(ig.GetMainViewport())
 		local keepflags = dl.Flags
 		dl.Flags = bit.band(dl.Flags,bit.bnot(ig.lib.ImDrawListFlags_AntiAliasedLines))
-		--points in curr_spline
-		if NM.curr_spline > 0 then
-		if curr_hole[0]>0 then
-			for i,v in ipairs(M.sccoors[NM.curr_spline].holes[curr_hole[0]]) do
-				local scpoint = ViewportToScreen(v.x,v.y)
-				local color = i==1 and ig.U32(1,1,0,1) or ig.U32(1,0,0,1)
-				dl:AddCircleFilled(scpoint, 4, color)
-			end
-		else
-			for i,v in ipairs(M.sccoors[NM.curr_spline]) do
-				local scpoint = ViewportToScreen(v.x,v.y)
-				local color = i==1 and ig.U32(1,1,0,1) or ig.U32(1,0,0,1)
-				dl:AddCircleFilled(scpoint, 4, color)
-			end
-		end
-		end
 		--polylines
 		for i=1,numsplines do
+			if #M.ps[i] < 2 then goto ENDPOLYLINES end
 			local color = i == NM.curr_spline and ig.U32(0.75,1,0,1) or ig.U32(0.75,1,0,0.2) --(0.25,0.5,0,0.5)
 			local color2 = i == NM.curr_spline and ig.U32(0.75,1,0,0.1) or ig.U32(0.75,1,0,0.05) --(0.25,0.5,0,0.5)
 			local colorhole = i == NM.curr_spline and ig.U32(1,0,0,1) or ig.U32(0.75,1,0,0.2) --(0.25,0.5,0,0.5)
@@ -139,12 +105,6 @@ local function Editor(GL,updatefunc1,args)
 			for j,p in ipairs(M.ps[i]) do
 				local scpoint = ViewportToScreen(p.x,p.y)
 				pointsI[j-1] = scpoint
-			end
-			if NM.drawregion then
-				--print"drawregion"
-				if not M.triangulation[i] then M:triangulate(i) end
-				DrawTriangulation(dl,M.triangulation[i],color2)
-				--dl:AddConcavePolyFilled(pointsI,#M.ps[i],color2)
 			end
 			--dl:AddPolyline(pointsI, #M.ps[i], color, ig.lib.ImDrawFlags_Closed, 1)
 			PolyArrow(dl, pointsI, #M.ps[i], color)
@@ -159,9 +119,33 @@ local function Editor(GL,updatefunc1,args)
 					PolyArrow(dl, pointsI, #hole, colorhole)
 				end
 			end
+			::ENDPOLYLINES::
 		end
+		--points in curr_spline
 		if NM.curr_spline > 0 then
-		if NM.points == 3 or NM.points == 4 then --edit or clear
+		if curr_hole[0]>0 then
+			for i,v in ipairs(M.sccoors[NM.curr_spline].holes[curr_hole[0]]) do
+				local scpoint = ViewportToScreen(v.x,v.y)
+				local color = i==1 and ig.U32(1,1,0,1) or ig.U32(1,0,0,1)
+				dl:AddCircleFilled(scpoint, 4, color)
+			end
+		else
+			for i,v in ipairs(M.sccoors[NM.curr_spline]) do
+				local scpoint = ViewportToScreen(v.x,v.y)
+				local color = i==1 and ig.U32(1,1,0,1) or ig.U32(1,0,0,1)
+				dl:AddCircleFilled(scpoint, 4, color)
+			end
+			--repeat 1 for alway above
+			if #M.sccoors[NM.curr_spline] > 0 then
+			local v1 = M.sccoors[NM.curr_spline][1]
+			local scpoint1 = ViewportToScreen(v1.x,v1.y)
+			dl:AddCircleFilled(scpoint1, 4, ig.U32(1,1,0,1))
+			end
+		end
+		end
+		------------
+		if NM.curr_spline > 0 then
+		if action == 3 or action == 4 then --edit or clear
 			local mposvp = vec2(ScreenToViewport(mpos.x, mpos.y))
 			if curr_hole[0] == 0 then
 				for i,sc in ipairs(M.sccoors[NM.curr_spline]) do
@@ -221,15 +205,52 @@ local function load_polyset( filename)
 		for i=1,numsplines do M.divs[i] = ffi.new("int[1]",1) end
 		M.ps = {}
 		NM.defs.curr_spline.args.max=numsplines
-		NM.vars.points[0]=1 --no edit acction
+		action=1 --no edit acction
 		NM.vars.curr_spline[0] = 1
+		curr_hole[0] = 0
 		M:calc_all_splines()
 
 end
 
 local polyloader = gui.FileBrowser(nil,{filename="phfx",key="import",pattern="polyset"},load_polyset)
+
+local function load_contours( filename)
+		local func,err = loadfile(filename)
+		if not func then print(err); error();return end
+		local contours = func()
+		----------------------
+		local sccoors = {}
+		for i,cont in ipairs(contours) do
+			local sig_area = CG.signed_area(cont)
+			if sig_area > 0 then
+				sccoors[#sccoors + 1] = cont
+			else
+				sccoors[#sccoors].holes = sccoors[#sccoors].holes or {}
+				local holes = sccoors[#sccoors].holes
+				holes = holes or {}
+				holes[#holes+1]= cont
+			end
+		end
+		----------------------
+		numsplines = #sccoors
+		--center_polys(params)
+		M.sccoors = sccoors
+		M.alpha = {}
+		for i=1,numsplines do M.alpha[i] = ffi.new("float[1]",0.5) end
+		M.divs = {}
+		for i=1,numsplines do M.divs[i] = ffi.new("int[1]",1) end
+		M.ps = {}
+		NM.defs.curr_spline.args.max=numsplines
+		action=1 --no edit acction
+		NM.vars.curr_spline[0] = 1
+		curr_hole[0] = 0
+		M:calc_all_splines()
+end
+
+
+local contours_loader = gui.FileBrowser(nil,{filename="phfx",key="importcont",pattern="contours"},load_contours)
 	-----------------
-	
+
 	local doingedit = false
 	NM = gui.Dialog("spline",vars,function(this)
 		local NM = this
@@ -239,6 +260,26 @@ local polyloader = gui.FileBrowser(nil,{filename="phfx",key="import",pattern="po
 		local mposvp = vec2(ScreenToViewport(mpos.x, mpos.y))
 		if NM.curr_spline == 0 then goto SHOW end
 		
+		-------action toolbox
+		ig.Text("actions:")
+		ig.SameLine()
+		if ig.Button"none" then
+			GL:SetCursor(nil)
+			action = 1
+		end
+		ig.SameLine() --add
+		if GL.Ficons:Button(GL.Ficons.cursorcps.pen) then
+			action = 2
+		end
+		ig.SameLine() --move
+		if GL.Ficons:Button(GL.Ficons.cursorcps.hand) then
+			action = 3
+		end
+		ig.SameLine() --delete
+		if GL.Ficons:Button(GL.Ficons.cursorcps.eraser) then
+			action = 4
+		end
+		-----------
 		if ig.SliderFloat("alpha",M.alpha[NM.curr_spline],0,1) then
 			M:process_all()
 		end
@@ -275,9 +316,10 @@ local polyloader = gui.FileBrowser(nil,{filename="phfx",key="import",pattern="po
 			end
 			goto SHOW
 		end
-		if this.points == 1 then goto SHOW end
-		ig.SetMouseCursor(ig.lib.ImGuiMouseCursor_Hand);
-		if this.points == 2 then --set
+		if action == 1 then goto SHOW end --GL:SetCursor(nil); goto SHOW end
+		--ig.SetMouseCursor(ig.lib.ImGuiMouseCursor_Hand);
+		if action == 2 then --set
+			GL:SetCursor(GL.cursors.pen)
 			if igio.MouseClicked[0] and not igio.MouseDownOwned[0] then
 				if curr_hole[0]==0 then
 					table.insert(M.sccoors[NM.curr_spline],mposvp)
@@ -289,7 +331,8 @@ local polyloader = gui.FileBrowser(nil,{filename="phfx",key="import",pattern="po
 				if M:numpoints(ii)>2 then updatefunc(M) end
 			end
 			
-		elseif this.points == 3 then --edit
+		elseif action == 3 then --edit
+			GL:SetCursor(GL.cursors.hand)
 			if doingedit then
 				if curr_hole[0] == 0 then
 					M.sccoors[NM.curr_spline][doingedit] = mposvp
@@ -316,7 +359,8 @@ local polyloader = gui.FileBrowser(nil,{filename="phfx",key="import",pattern="po
 				end
 				if touched > 0 then doingedit = touched end
 			end
-		elseif this.points == 4 then --clear
+		elseif action == 4 then --clear
+			GL:SetCursor(GL.cursors.eraser)
 			if igio.MouseClicked[0] then
 				local touched = -1
 				if curr_hole[0] == 0 then
@@ -346,6 +390,11 @@ local polyloader = gui.FileBrowser(nil,{filename="phfx",key="import",pattern="po
 			polyloader.open()
 		end
 		polyloader.draw()
+		ig.SameLine()
+		if ig.SmallButton("import contours") then
+			contours_loader.open()
+		end
+		contours_loader.draw()
 		ShowSplines(this)
 	end)
 
@@ -358,12 +407,74 @@ local polyloader = gui.FileBrowser(nil,{filename="phfx",key="import",pattern="po
 		end
 	end
 	
+	local function Tess2tesselate(points1)
+		local insert = table.insert
+			local Tess2 = require"anima.Fonter.tess2b3" 
+			local contours = {}
+			local contour = {}
+			for i,v in ipairs(points1) do
+				insert(contour,v.x)
+				insert(contour,v.y)
+			end
+			contours[#contours+1] = contour
+			if points1.holes then
+			for i,hole in ipairs(points1.holes) do
+				local contour = {}
+				for j,v in ipairs(hole) do
+					insert(contour,v.x)
+					insert(contour,v.y)
+				end
+				contours[#contours+1] = contour
+			end
+			end
+			local polisiz = 3
+			local tess = Tess2.tesselate({
+				contours= contours,
+				windingRule=Tess2.WINDING_ODD,
+				elementType=Tess2.POLYGONS,
+				polySize=polisiz,
+				vertexSize= 2
+			});
+			local points = {}
+			local tr = {}
+			for i = 0,tess.elements.length-1,polisiz do
+				--print" begin path"
+				for j = 0, polisiz-1 do
+					local idx = tess.elements[i+j];
+					if (idx == -1) then goto continue end
+					if (j == 0) then
+						--ctx.moveTo(tess.vertices[idx*2+0], tess.vertices[idx*2+1]);
+						--print(tess.vertices[idx*2+0], tess.vertices[idx*2+1]);
+						points[#points+1] = mat.vec2(tess.vertices[idx*2+0], tess.vertices[idx*2+1])
+						insert(tr,#points-1)
+					else
+						--ctx.lineTo(tess.vertices[idx*2+0], tess.vertices[idx*2+1]);
+						--print(tess.vertices[idx*2+0], tess.vertices[idx*2+1]);
+						points[#points+1] = mat.vec2(tess.vertices[idx*2+0], tess.vertices[idx*2+1])
+						insert(tr,#points-1)
+					end
+					::continue::
+				end
+				--print"end path"
+			end
+			--prtable("result",points,tr)
+			return points, tr
+	end
 	function M:spline2mask(fbo, front_color, ii)
 		ii = ii or NM.curr_spline
 		
 		local points = self.ps[ii]
 		if not points then print"No Spline:select spline" return end
-		local points,indexes = CG.EarClipSimple2(points, true)
+		
+		--local points,indexes = CG.EarClipSimple2(points, true)
+		
+		local glu_tesselator = require"anima.Fonter.glu_tesselator"
+		local meshes = glu_tesselator.tesselate(points,glc.GLU_TESS_WINDING_ODD,true)
+		--meshes[1].triangles = CG.Delaunay( meshes[1].points,meshes[1].triangles)
+		local points, indexes = meshes[1].points, meshes[1].triangles
+		
+		--local points,indexes = Tess2tesselate(points)
+		
 		local ndc = {}
 		for i=1,#points do
 			ndc[i] =  (points[i] + mat.vec2(0.5,0.5))*2/mat.vec2(GL.W,GL.H) - mat.vec2(1,1)
@@ -377,7 +488,7 @@ local polyloader = gui.FileBrowser(nil,{filename="phfx",key="import",pattern="po
 		gl.glDisable(glc.GL_DEPTH_TEST)
 		fbo:viewport()
 		vaoT:draw_elm()
-		vaoT:draw(glc.GL_LINE_LOOP)
+		--vaoT:draw(glc.GL_LINE_LOOP)
 		vaoT:draw(glc.GL_POINTS)
 		fbo:UnBind()
 	end
@@ -418,7 +529,9 @@ local polyloader = gui.FileBrowser(nil,{filename="phfx",key="import",pattern="po
 		--M:process_all()
 		return numsplines
 	end
-	
+	function M:get_numsplines()
+		return numsplines
+	end
 	function M:newhole(pts)
 		if NM.curr_spline==0 then return end
 		self.sccoors[NM.curr_spline].holes = self.sccoors[NM.curr_spline].holes or {}
@@ -454,6 +567,14 @@ local polyloader = gui.FileBrowser(nil,{filename="phfx",key="import",pattern="po
 		NM.defs.curr_spline.args.max=numsplines 
 		--M:process_all()
 		return numsplines
+	end
+	
+	function M:deletehole()
+		if curr_hole[0] == 0 then return end
+		local ii = NM.curr_spline
+		table.remove(M.sccoors[ii].holes,curr_hole[0])
+		curr_hole[0] = math.max(0,curr_hole[0]-1)
+		M:calc_spline()
 	end
 	
 	function M:deleteall()
@@ -524,6 +645,7 @@ local polyloader = gui.FileBrowser(nil,{filename="phfx",key="import",pattern="po
 			for i=1,ind do
 				nsc[#nsc + 1] = sc[i]
 			end
+			nsc.holes = self.sccoors[NM.curr_spline].holes
 			self.sccoors[NM.curr_spline] = nsc
 		else
 			local sc,nsc = self.sccoors[NM.curr_spline].holes[curr_hole[0]],{}
@@ -542,14 +664,19 @@ local polyloader = gui.FileBrowser(nil,{filename="phfx",key="import",pattern="po
 		ii = ii or NM.curr_spline
 		if self:numpoints(ii)>2 then
 			self.ps[ii] = CG.Spline(self.sccoors[ii],M.alpha[ii][0],M.divs[ii][0],true)
+			for j=1,#self.ps[ii] do assert(self.ps[ii][j],"nil index in self.ps") end
 			if self.sccoors[ii].holes then
 				self.ps[ii].holes = {}
 				for i,hole in ipairs(self.sccoors[ii].holes) do
 					if #hole > 2 then
 						self.ps[ii].holes[i] = CG.Spline(hole,M.alpha[ii][0],M.divs[ii][0],true)
+						local phole = self.ps[ii].holes[i]
+						for j=1,#phole do assert(phole[j],"nil index in self.ps") end
 					end
 				end
 			end
+		else
+			self.ps[ii] = {}
 		end
 	end
 	function M:calc_all_splines()
@@ -559,14 +686,39 @@ local polyloader = gui.FileBrowser(nil,{filename="phfx",key="import",pattern="po
 		updatefunc(self)
 	end
 	
-	function M:triangulate(ii)
-		print("triangulate",ii)
-		if #self.ps[ii] < 3 then return end
-		local good
-		self.triangulation[ii] = {}
-		self.triangulation[ii].points, self.triangulation[ii].tr, good = CG.EarClipSimple2(self.ps[ii],true)
-		if not good then print"bad EarClip" end
-		--return indexes,good
+	
+	--takes polygon with holes and returns points set and one set of indexed contours over the point set
+	local function CHECKpol(polinds)
+		for k,polind in pairs(polinds) do
+			for j=1,#polind do assert(polind[j],"nil index in polind") end
+		end
+	end
+	local function clone_ps(ps)
+		local pts = {}
+		for i=1,#ps do pts[i] = ps[i] end
+		if ps.holes then
+			for i,hole in ipairs(ps.holes) do
+				for j,v in ipairs(hole) do pts[#pts+1]=v end
+			end
+		end
+		local contours = {}
+		local Polind = {}
+		---------------
+		for j=1,#ps do assert(ps[j],"nil index in ps") end
+		for i=1,#ps do Polind[i]=i end
+		contours[1] = Polind
+		local sum = #Polind
+		if ps.holes then
+			for i,hole in ipairs(ps.holes) do
+				local Pi = {}
+				for j=1,#hole do
+					Pi[j]=j + sum
+				end
+				contours[#contours+1]=Pi
+				sum = sum + #contours[#contours]
+			end
+		end
+		return pts, contours
 	end
 	
 	function M:save()
@@ -600,9 +752,10 @@ local polyloader = gui.FileBrowser(nil,{filename="phfx",key="import",pattern="po
 			-- NM.vars.curr_spline[0] = j
 			-- self:process_all()
 		-- end
+		curr_hole[0] = 0
 		numsplines = params.numsplines
 		NM.defs.curr_spline.args.max=numsplines
-		NM.vars.points[0]=1 --no edit acction
+		action=1 --no edit acction
 		NM.vars.curr_spline[0] = 1
 		M:calc_all_splines()
 	end
@@ -612,9 +765,10 @@ local polyloader = gui.FileBrowser(nil,{filename="phfx",key="import",pattern="po
 	return M
 end
 
---[=[
-local GL = GLcanvas{H=800,aspect=1,DEBUG=true,use_imgui_viewport=false}
-local function update(n) print("update spline",n) end
+---[=[
+if not ... then
+local GL = GLcanvas{H=900,aspect=1,DEBUG=true,use_imgui_viewport=false}
+local function update(n) end --print("update spline",n) end
 local edit = Editor(GL,update,{region=true})--,doblend=true})
 local plugin = require"anima.plugins.plugin"
 edit.fb = plugin.serializer(edit)
@@ -627,6 +781,36 @@ function GL.imgui()
 	--edit.NM:draw()
 end
 GL:start()
+end
 --]=]
 
+--[=[
+if not ... then
+local GL = GLcanvas{H=900,aspect=1,DEBUG=true,use_imgui_viewport=false}
+local function update(n) end --print("update spline",n) end
+local edit = Editor(GL,update,{region=true})--,doblend=true})
+local plugin = require"anima.plugins.plugin"
+edit.fb = plugin.serializer(edit)
+local DBox = GL:DialogBox("Spline demo",true)
+local maskfbo
+function GL.init()
+	DBox:add_dialog(edit.NM)
+	maskfbo = GL:initFBO({no_depth=true})
+end
+function GL.imgui()
+	--ig.ShowDemoWindow()
+	--edit.NM:draw()
+end
+function GL.draw()
+	maskfbo:Bind()
+	gl.glClearColor(0,0,1,0)
+	ut.Clear()
+	maskfbo:UnBind()
+	edit:spline2mask(maskfbo,{1,0,0,0},1)
+	ut.Clear()
+	maskfbo:tex():drawcenter()
+end
+GL:start()
+end
+--]=]
 return Editor

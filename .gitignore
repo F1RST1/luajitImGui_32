@@ -1,3 +1,6 @@
+examples/img/genwebp.bat
+glfw_opengl3_implot_new.gif
+*.fullspec
 examples/glfw_opengl3_bench
 examples/sdl2
 examples/gui

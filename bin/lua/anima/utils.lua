@@ -212,6 +212,21 @@ function copyiTable(a)
 	return res
 end
 
+-- not recursive working use deepcopy
+function copyTable(a)
+	--assert(a~=REST)
+	local res ={}
+	for k,v in pairs(a) do
+		if type(v) == "table" then
+			res[k] = copyTable(v)
+		else
+			res[k]=v
+		end
+	end
+	return res
+end
+
+
 --accepts several tables or items
 function concatTables(...)
 	local res={}
@@ -456,7 +471,7 @@ function tbl_compare(t1,t2)
         return eq
     end
     if not _comp(t1,t2) then return false end
-	print"inverse compare"
+	--print"inverse compare"
 	lookup_table = {}
 	seen = {}
 	return _comp(t2,t1)
@@ -677,6 +692,15 @@ function serializeTable(name, value, saved)
 	return table.concat(string_table)
 end
 
+function SaveTable(params, filename)
+	local str = {}
+	table.insert(str,serializeTable("params",params))
+	table.insert(str,"\nreturn params")
+	local file,err = io.open(filename,"w")
+	if not file then print(err); return end
+	file:write(table.concat(str))
+	file:close()
+end
 -- local ff = ffi.new("float[3]")
 --local ff = ffi.new("float[?]",3)
 --loadstring(cdataSerialize(ff))()
@@ -805,7 +829,8 @@ function GlobalsChecker()
 end
 
 function ProfileStart(prstr,filename)
-	require("jit.p").start(prstr or "3vfsi4m1", filename or 'profReport.txt')
+	--require("jit.p").start(prstr or "3vfsi4m1", filename or 'profReport.txt')
+	require("jit.p").start(prstr or "-3vfsm1", filename or 'profReport.txt')
 end
 function ProfileStop()
 	require("jit.p").stop()

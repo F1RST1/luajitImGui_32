@@ -66,7 +66,7 @@ Differencies from [anima](https://github.com/sonoro1234/anima) project are as fo
 [^note]: This sample is attached by [anima](https://github.com/sonoro1234/anima) project. You can execute this sample using
 \*.bat in [bin/examples/LuaJIT-ImGui/examples](bin/examples/LuaJIT-ImGui/examples) folder.
 
-- v1.92.1dock (2025/07)
+- v1.92.7dock (2026/04)
 
 #### Examples
 
@@ -218,9 +218,19 @@ Note [^note2]
 
 - WindowsOS 64bit  
 - Latest  
-[luajitImGui-1.92.1.0.zip](https://github.com/dinau/luajitImGui/archive/refs/tags/1.92.1.0.zip) 2025/07  
+[luajitImGui-1.92.7.0.zip](https://github.com/dinau/luajitImGui/archive/refs/tags/1.92.7.0.zip) 2025/04  
+
+   If `Windows Defender` interferes in executing `*.exe` and `*.bat` files,
+   it may be better to clone git repository,
+   
+   ```sh
+   git clone --branch 1.92.1.0 --depth 1 https://github.com/dinau/luajitImGui
+   ```
+
 
 - Old  
+[luajitImGui-1.92.5.0.zip](https://github.com/dinau/luajitImGui/archive/refs/tags/1.92.5.0.zip) 2026/01  
+[luajitImGui-1.92.1.0.zip](https://github.com/dinau/luajitImGui/archive/refs/tags/1.92.1.0.zip) 2025/07  
 [luajitImGui-1.91.8.4.zip](https://bitbucket.org/dinau/storage/downloads/luajitImGui-1.91.8.4.zip) 2025/03  
 [luajitImGui-1.91.8.3.zip](https://bitbucket.org/dinau/storage/downloads/luajitImGui-1.91.8.3.zip) 2025/03  
 [luajitImGui-1.91.8.2.zip](https://bitbucket.org/dinau/storage/downloads/luajitImGui-1.91.8.2.zip) 2025/03  
@@ -238,13 +248,13 @@ Note [^note2]
 
 ---
 
-First on WindowsOS extract zip file downloaded then  
-for instance,
+First on WindowsOS extract zip file downloaded then for instance,
 
 ```sh
 cd luajitImGui-1.91.0.0
 cd examples/glfw_opengl3
-glfw_opengl3.exe         # or double click on Windows file explore
+glfw_opengl3.exe         # or double click in Windows file explorer
+                         # or double click r.bat
 ```
 
 #### Other examples 
@@ -257,11 +267,13 @@ Refer to nice exmaples: [bin/examples](bin/examples)
 
 ---
 
+- Use CMake version 3.3x.y [CMake 3.31.10 zip](https://github.com/Kitware/CMake/releases/download/v3.31.10/cmake-3.31.10-windows-x86_64.zip)  
+https://cmake.org/download/
 - Prerequisites  
    Install at least on MSys2/MinGW console,
 
    ```sh
-   pacman -S mingw-w64-ucrt-x86_64-{cmake,gcc,clang,llvm-openmp} patch make git
+   pacman -S mingw-w64-ucrt-x86_64-{gcc,clang,llvm-openmp} patch make git
   ```
 
 - Build **on MSys2 console**,
@@ -279,9 +291,9 @@ Refer to nice exmaples: [bin/examples](bin/examples)
 
 ---
 
-- Clang 20.1.8 (Current compiler)
+- Clang 21.1.8 (Current compiler)
    - Libraries: OpenMP 
-- Gcc.exe (Rev1, Built by MSYS2 project) 15.1.0)
+- Gcc.exe (Rev1, Built by MSYS2 project) 15.2.0)
 - (Microsoft Visual Studio 2022 C/C++)
 - CMake version 3.30.3
 - Git version 2.46.0.windows.1
@@ -294,6 +306,7 @@ Refer to nice exmaples: [bin/examples](bin/examples)
 - WindowsOS 64bit versions
    | Date    | ImGui / CImGui | LuaJITImGui | Commemt |
    | ---     | -----------    | ---         | ---     |
+   | 2026/01 | v1.92.5        | v1.92.5.0   |         |
    | 2025/07 | v1.92.1        | v1.92.1.0   |         |
    | 2025/03 | v1.91.8        | v1.91.8.4   |         |
    | 2025/01 | v1.91.6        | v1.91.6.0   |         |
