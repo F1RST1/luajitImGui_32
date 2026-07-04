@@ -120,7 +120,7 @@ local gui_main = function (win)
             --ig.SetWindowFontScale(wsNormal)
             --
             ig.PushID(ix)
-            if ig.BeginPopupContextItem("Contex Menu", 1) then
+            if ig.BeginPopupContextItem("Context Menu", ig.lib.ImGuiPopupFlags_MouseButtonRight) then
               if ig.MenuItem("Copy to clip board", "" , false, true) then
                 item_current =  ix
                 ig.SetClipboardText(ift.iconFontsTbl2[ix][2])

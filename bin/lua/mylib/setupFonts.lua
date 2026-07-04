@@ -9,23 +9,14 @@ function point2px(point) -- ## Convert point to pixel
   return ((point * 96) / 72)
 end
 
-local config = ffi.new("ImFontConfig",{
-  FontDataOwnedByAtlas = true,
-  FontNo = 0,
-  OversampleH = 3,
-  OversampleV = 1,
-  PixelSnapH = false,
-  GlyphMaxAdvanceX = 1000.0,
-  RasterizerMultiply = 1.0,
-  RasterizerDensity  = 1.0,
-  MergeMode = false,          -- ** Notice **
-  EllipsisChar = -1,
-})
-
-function setupFonts(pio)
+local config -- Define as global
+---------------
+--- setupFonts
+---------------
+function setupFonts(ig)
+  config = ig.ImFontConfig()
+  local pio = ig.GetIO()
   local fontsAtlas = pio.Fonts
-  --maximal range allowed with ImWchar16
-  --local ranges = ffi.new("ImWchar[3]",{0x0001,0xFFFF,0})
   local sActiveFontTitle = ""
   local fontTbl = {
                    {fontName="meiryo.ttc",  point=14.5, fontNo=0, title="メイリオ"}     -- Windows7, 8
@@ -39,7 +30,6 @@ function setupFonts(pio)
   for _, fInfo in ipairs(fontTbl) do
     sActiveFontName = os.getenv("windir") .. "/fonts/" .. fInfo.fontName
     if utils.fileExists(sActiveFontName) then
-      --local ranges = fontsAtlas:GetGlyphRangesJapanese()
       config.FontNo = fInfo.fontNo
       theFONT = fontsAtlas:AddFontFromFileTTF(sActiveFontName ,point2px(fInfo.point) ,nil ,nil)
       if (theFONT ~= nil) then

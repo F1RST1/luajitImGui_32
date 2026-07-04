@@ -43,6 +43,7 @@ end
 --- imPlotWindowSecond
 -----------------------
 function M.imPlotWindowSecond()
+	local spec_circle = ig.ImPlotSpec()
   --- Second plot window
   ig.Begin("Line Plots written in LuaJIT")
     for i=0,xs1Size-1 do
@@ -51,9 +52,10 @@ function M.imPlotWindowSecond()
     end
     if (ig.ImPlot_BeginPlot("Line Plots demo", ig.ImVec2(0,0))) then
       ig.ImPlot_SetupAxes("x", "y")
-      ig.ImPlot_PlotLine("f(x)", xs1, ys1, xs1Size)
-      ig.ImPlot_SetNextMarkerStyle(ig.lib.ImPlotMarker_Circle)
-      ig.ImPlot_PlotLine("g(x)", xs2, ys2, xs2Size,ig.lib.ImPlotLineFlags_Segments)
+      spec_circle.Marker = ig.lib.ImPlotMarker_Circle
+      ig.ImPlot_PlotLine("f(x)", xs1, ys1, xs1Size, spec_circle[0])
+      spec_circle.Flags = ig.lib.ImPlotLineFlags_Segments
+      ig.ImPlot_PlotLine("g(x)", xs2, ys2, xs2Size, spec_circle[0])
       ig.ImPlot_EndPlot()
     end
   ig.End()
@@ -142,9 +144,9 @@ function M.DemoSurfacePlots(pio)
     ig.ImPlot3D_SetupAxesLimits(-1, 1, -1, 1, -1.5, 1.5)
     ig.ImPlot3D_PushStyleVar(ig.lib.ImPlot3DStyleVar_FillAlpha, 0.8)
     if selected_fill[0] == 0 then
-      ig.ImPlot3D_SetNextFillStyle(solid_color)
+      -- ig.ImPlot3D_SetNextFillStyle(solid_color)
     end
-    ig.ImPlot3D_SetNextLineStyle(ig.ImPlot3D_GetColormapColor(1))
+    --ig.ImPlot3D_SetNextLineStyle(ig.ImPlot3D_GetColormapColor(1))
 
     -- Plot the surface
     if custom_range[0] then

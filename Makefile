@@ -47,15 +47,19 @@ SILENTED_WARNINGS += -Wno-unused-value     \
 										 -Wno-writable-strings \
 										 -Wno-deprecated-non-prototype
 
+NINJA_BUILD = false
 ifeq ($(TC),msvc)
 	# Compile using build/anima.sln on Microsoft Visual Studio 2022 C/C++ IDE.
 	#BUILD_INSTALL_CMD =  (msbuild.exe /m  build/anima.sln)
 else
-	BUILD_OPT += -G"MSYS Makefiles"
-	BUILD_INSTALL_CMD = ( make install )
-	#BUILD_OPT += -G"Ninja"
-	#BUILD_INSTALL_CMD = ( ninja install )
- 	#BUILD_OPT += -DCMAKE_CXX_STANDARD=11
+	ifeq ($(NINJA_BUILD),true)
+		BUILD_OPT += -G"Ninja"
+		BUILD_INSTALL_CMD = ( ninja install )
+		BUILD_OPT += -DCMAKE_CXX_STANDARD=11
+	else
+		BUILD_OPT += -G"MSYS Makefiles"
+		BUILD_INSTALL_CMD = ( make install )
+	endif
 	BUILD_OPT += -DCMAKE_C_FLAGS_RELEASE="-O2"
 	BUILD_OPT += -DCMAKE_CXX_FLAGS_RELEASE="-O2"
 	ifeq ($(TC),clang)
@@ -88,7 +92,6 @@ all: $(INSTALL_DIR) $(BUILD_DIR) main_build tools_build make_luajitw copy_dll
 
 main_build:
 	(cd $(BUILD_DIR); \
-	export CMAKE_GENERATOR="MSYS Makefiles" && \
 	CMAKE_POLICY_DEFAULT_CMP0000=OLD \
 	CMAKE_POLICY_VERSION_MINIMUM=3.5 \
 	cmake ../anima $(BUILD_OPT) )

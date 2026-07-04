@@ -89,7 +89,7 @@ local pio = ig.GetIO()
 --------------
 --- Load font
 --------------
-local  _, sActiveFontName, _ = setupFonts(pio)
+local  _, sActiveFontName, _ = setupFonts(ig)
 
 -- Set window title
 local sTitle

@@ -114,7 +114,7 @@ function M.createImGui(w, h, title, titleBarIcon, docking, fImPlot)
   --------------
   --- Load font
   --------------
-  local  _, sActiveFontName, sActiveFontTitle = setupFonts(pio)
+  local  _, sActiveFontName, sActiveFontTitle = setupFonts(ig)
   window.sActiveFontName = sActiveFontName
   window.sActiveFontTitle = sActiveFontTitle
 

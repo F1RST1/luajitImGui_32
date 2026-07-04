@@ -4,7 +4,7 @@
 - [LuaJITImGui](#luajitimgui)
   - [ImGui / CImGui Version](#imgui--cimgui-version)
   - [Examples](#examples)
-    - [implot3d_sample.lua](#implot3d_samplelua)
+    - [implot3d_sample](#implot3d_sample)
     - [glfw_opengl3_simple](#glfw_opengl3_simple)
     - [iconFontViewer](#iconfontviewer)
     - [glfw_opengl3](#glfw_opengl3)
@@ -14,7 +14,7 @@
     - [ImGuizmo_sample.lua](#imguizmo_samplelua)
     - [imnodes_graph_sample.lua](#imnodes_graph_samplelua)
   - [Other samples](#other-samples)
-    - [delaunay_particles.lua](#delaunay_particleslua)
+    - [delaunay_particles](#delaunay_particles)
     - [bacteria.lua](#bacterialua)
     - [house.lua](#houselua)
     - [corazon.lua](#corazonlua)
@@ -66,7 +66,7 @@ Differencies from [anima](https://github.com/sonoro1234/anima) project are as fo
 [^note]: This sample is attached by [anima](https://github.com/sonoro1234/anima) project. You can execute this sample using
 \*.bat in [bin/examples/LuaJIT-ImGui/examples](bin/examples/LuaJIT-ImGui/examples) folder.
 
-- v1.92.7dock (2026/04)
+- v1.92.7dock (2026/07)
 
 #### Examples
 
@@ -218,7 +218,7 @@ Note [^note2]
 
 - WindowsOS 64bit  
 - Latest  
-[luajitImGui-1.92.7.0.zip](https://github.com/dinau/luajitImGui/archive/refs/tags/1.92.7.0.zip) 2025/04  
+[luajitImGui-1.92.7.0.zip](https://github.com/dinau/luajitImGui/archive/refs/tags/1.92.7.0.zip) 2025/07   
 
    If `Windows Defender` interferes in executing `*.exe` and `*.bat` files,
    it may be better to clone git repository,
@@ -291,11 +291,11 @@ https://cmake.org/download/
 
 ---
 
-- Clang 21.1.8 (Current compiler)
+- Clang 22.1.7 (Current compiler)
    - Libraries: OpenMP 
-- Gcc.exe (Rev1, Built by MSYS2 project) 15.2.0)
+- Gcc.exe (Rev1, Built by MSYS2 project) 16.1.0)
 - (Microsoft Visual Studio 2022 C/C++)
-- CMake version 3.30.3
+- CMake version 4.3.4
 - Git version 2.46.0.windows.1
 - Make: GNU Make 4.4.1
 
@@ -306,6 +306,7 @@ https://cmake.org/download/
 - WindowsOS 64bit versions
    | Date    | ImGui / CImGui | LuaJITImGui | Commemt |
    | ---     | -----------    | ---         | ---     |
+   | 2026/07 | v1.92.7        | v1.92.7.0   |         |
    | 2026/01 | v1.92.5        | v1.92.5.0   |         |
    | 2025/07 | v1.92.1        | v1.92.1.0   |         |
    | 2025/03 | v1.91.8        | v1.91.8.4   |         |

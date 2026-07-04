@@ -35,18 +35,6 @@ function gui_main(win)
   --- Flags
   local fShowDemo = ffi.new("bool[1]",true)
 
-  -- Set window title
-  local sTitle = ""
-  local imGuiVersion = ffi.string(ig.GetVersion())
-  if "" == win.sActiveFontName then
-    sTitle = string.format("[ImGui: v%s]" ,imGuiVersion)
-  else
-    print("Loaded font: ", win.sActiveFontName)
-    local sAry = win.sActiveFontName:split("/")
-    local fntName = sAry[#sAry] -- Eliminated directory part
-    sTitle = string.format("[ImGui: v%s] Start up font: %s)" , imGuiVersion, fntName)
-  end
-
   local pio = ig.GetIO()
 
   -- Set window title

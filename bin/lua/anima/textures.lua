@@ -915,7 +915,7 @@ function Texture(w,h,formato,pTexor,args)
 		gl.glBindTexture(glc.GL_TEXTURE_2D,0); --https://stackoverflow.com/questions/18641988/broken-texture-number-opengl-after-glgentextures-glbindtexture/18652534
 		gl.glGenTextures(1,tex.pTex) 
 		gl.glBindTexture(glc.GL_TEXTURE_2D, tex.pTex[0])
-		tex.GL:addTexture(tex.pTex[0],"Texture "..tostring(tex))
+		tex.GL:addTexture(tex.pTex[0],tex)
 		gl.glTexParameteri(glc.GL_TEXTURE_2D,glc.GL_TEXTURE_MIN_FILTER,glc.GL_LINEAR)
 		gl.glTexParameteri(glc.GL_TEXTURE_2D,glc.GL_TEXTURE_MAG_FILTER,glc.GL_LINEAR)
 		gl.glTexParameteri(glc.GL_TEXTURE_2D, glc.GL_TEXTURE_WRAP_S, glc.GL_MIRRORED_REPEAT);
@@ -940,8 +940,11 @@ function Texture(w,h,formato,pTexor,args)
 		--assert(not self.isdeleted)
 		--print("tex:delete isdeleted", self.isdeleted,"contex good",GL:checkcontext(),"tex:",self.tex,self)
 		--prtable("tex:delete from", debug.getinfo(4,"Sl"))
+		--print"tex:delete"
+		if self.GL.chktextures[self.pTex[0]] then
 		gl.glDeleteTextures(1,tex.pTex) 
 		self.GL:removeTexture(tex.pTex[0])
+		end
 		--avoid _gc after manual delete
 		getmetatable(self.gcproxy).__gc = nil
 		self.isdeleted = true
@@ -1202,6 +1205,14 @@ function Texture(w,h,formato,pTexor,args)
 		self:Bind(0)
 		prog:drawpos(getAspectViewport(W or self.GL.W,H or self.GL.H,self.width, self.height))
 	end
+	function tex:draw_blend()
+		ut.ClearDepth()
+		gl.glEnable(glc.GL_BLEND)
+		gl.glBlendFunc(glc.GL_SRC_ALPHA, glc.GL_ONE_MINUS_SRC_ALPHA)
+		glext.glBlendEquation(glc.GL_FUNC_ADD)
+		self:drawcenter()
+		gl.glDisable(glc.GL_BLEND)
+	end
 	function tex:drawpos(x,y,w,h)
 		self:Bind(0)
 		prog:drawpos(x,y,w or self.width,h or self.height)
@@ -1346,6 +1357,7 @@ function Texture(w,h,formato,pTexor,args)
 	end
 	function tex:inc_signature()
 		self.instance = self.instance + 1
+		return self
 	end
 	function tex:get_signature()
 		return tostring(self)..self.instance
@@ -1655,7 +1667,7 @@ function CreateVolume( width,  height,  depth,  numComponents,GL)
 		error()
 	end
     local thefbo = { fbo=fboHandle, textureHandle=textureHandle, GL=GL };
-	thefbo.GL:addTexture(thefbo.textureHandle[0],"from VolumeFBO "..textureHandle[0].." "..tostring(thefbo))
+	thefbo.GL:addTexture(thefbo.textureHandle[0], thefbo)--"from VolumeFBO "..textureHandle[0].." "..tostring(thefbo))
 
     gl.glClearColor(0, 0, 0, 0);
     gl.glClear(glc.GL_COLOR_BUFFER_BIT);

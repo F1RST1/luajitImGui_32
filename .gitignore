@@ -2,8 +2,10 @@ examples/img/genwebp.bat
 glfw_opengl3_implot_new.gif
 *.fullspec
 examples/glfw_opengl3_bench
+examples/sdl3_opengl3
 examples/sdl2
 examples/gui
+examples/tools/zig
 stringArray/
 node_modules/
 .build/

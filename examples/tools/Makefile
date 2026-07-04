@@ -15,7 +15,7 @@ EXAMPLE_DIRS := glfw_opengl3 \
 							  sdl2_opengl3
 
 
-.PHONY: gen_bat gen_exe
+.PHONY: gen_bat gen_exe zig
 
 all:  gen_bat gen_exe
 
@@ -30,6 +30,9 @@ gen_bat:
 	@echo === Generating Batch files ===
 	@echo =
 	../../bin/luajit genbat.lua
+
+zig:
+	$(MAKE) -C zig
 
 define def_gen_bat
 	@echo @echo off >          $(EXAMPLES_DIR)/LuaJIT-ImGui/examples/$(1).bat
