@@ -26,3 +26,4 @@ jobs:
       run: |
         uname -a
         make .build main_build make_luajitw tools_build TC=gcc CPU_CORE_BITS=32bit RESOURCE_FILE=res/rscVcc.res
+        
