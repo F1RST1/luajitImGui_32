@@ -26,5 +26,9 @@ jobs:
     - shell: msys2 {0}
       run: |
         uname -a
-        make .build main_build make_luajitw tools_build TC=gcc CPU_CORE_BITS=32bit RESOURCE_FILE=res/rscVcc.res
-        
+        make .build main_build make_luajitw tools_build copy_dll TC=gcc CPU_CORE_BITS=32bit RESOURCE_FILE=res/rscVcc.res
+    - uses: actions/upload-artifact@v4
+      with:
+        name: luajit-imgui-windows-32bit
+        path: bin/
+        if-no-files-found: error
