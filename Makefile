@@ -79,9 +79,12 @@ else
 							 -Wno-register \
 							 -O2 $(SILENTED_WARNINGS)"
 
-	COPY_DLL1 = cp -f dll/$(CPU_CORE_BITS)/*.dll bin/
-	COPY_DLL2 = cp -f dll/$(CPU_CORE_BITS)/luajitw/{lua51.dll,luajitw.exe} bin/
-	COPY_FREETYPE_DLL = cp -f dll/$(CPU_CORE_BITS)/freetype/*.dll bin/
+	DLL_SOURCE_DIR ?= dll/$(CPU_CORE_BITS)
+	FREETYPE_DLL_SOURCE_DIR ?= $(DLL_SOURCE_DIR)/freetype
+	COPY_DLL1 = cp -f $(DLL_SOURCE_DIR)/*.dll bin/
+	ifneq ($(FREETYPE_DLL_SOURCE_DIR),$(DLL_SOURCE_DIR))
+		COPY_FREETYPE_DLL = cp -f $(FREETYPE_DLL_SOURCE_DIR)/*.dll bin/
+	endif
 endif
 
 BUILD_DIR = .build
@@ -128,10 +131,8 @@ luajitw:
 
 copy_dll:
 	$(COPY_DLL1)
-	# Copy with rename to luajiw.exe
-	cp -f $(LUAJIT_DIR)/src/luajit.exe dll/$(CPU_CORE_BITS)/luajitw/luajitw.exe
-	cp -f $(LUAJIT_DIR)/src/lua51.dll dll/$(CPU_CORE_BITS)/luajitw/lua51.dll
-	$(COPY_DLL2)
+	cp -f $(LUAJIT_DIR)/src/luajit.exe bin/luajitw.exe
+	cp -f $(LUAJIT_DIR)/src/lua51.dll bin/lua51.dll
 	$(COPY_FREETYPE_DLL)
 
 $(INSTALL_DIR):
