@@ -5,6 +5,7 @@ endif
 C_SRC = execLuaSource
 
 EXAMPLES_DIR = ../../bin/examples
+RESOURCE_FILE ?= res/rsc64.res
 
 CFLAGS += -mwindows
 
@@ -43,7 +44,7 @@ endef
 
 define def_gen_exe
 	@(cd ../$(1); \
-	  $(TC) -O2 -Wl,-s $(CFLAGS) -o $(1).exe res/rsc64.res  ../tools/$(C_SRC).c)
+	  $(TC) -O2 -Wl,-s $(CFLAGS) -o $(1).exe $(RESOURCE_FILE)  ../tools/$(C_SRC).c)
 	@echo ../$(1)/$(1).exe
 
 endef

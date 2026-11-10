@@ -2,7 +2,6 @@ name: Windows OS compilation-
 
 on:
   push:
-    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -15,13 +14,15 @@ jobs:
         submodules: 'recursive'
     - uses: msys2/setup-msys2@v2
       with:
+        msystem: MINGW32
         update: true
         install: >-
           make
           patch
           git
+          mingw-w64-i686-cmake
+          mingw-w64-i686-gcc
     - shell: msys2 {0}
       run: |
         uname -a
-        pacman --noconfirm -S mingw-w64-x86_64-{clang,cmake,llvm-openmp}
-        make
+        make .build main_build make_luajitw tools_build TC=gcc CPU_CORE_BITS=32bit RESOURCE_FILE=res/rscVcc.res
