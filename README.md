@@ -288,10 +288,10 @@ https://cmake.org/download/
 
 - The 32-bit Windows CI build uses the `MINGW32` environment. Since some i686
   packages are no longer in the active MSYS2 repository, CI downloads the
-  required FreeType dependencies, HarfBuzz, Graphite2, libpng, libsamplerate,
-  and stb files from the official MSYS2 archive and verifies their SHA-256
-  hashes. It rebuilds `stb_image.dll` with the 32-bit compiler, removes stale
-  DLLs before packaging, and checks that every packaged DLL is x86.
+  required FreeType and GLib dependencies, HarfBuzz, Graphite2, libpng,
+  libsamplerate, and stb files from the official MSYS2 archive and verifies
+  their SHA-256 hashes. It rebuilds `stb_image.dll` with the 32-bit compiler,
+  removes stale DLLs before packaging, and checks that every packaged DLL is x86.
 
 - Build **on MSYS2 console**,
 

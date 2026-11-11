@@ -23,7 +23,6 @@ jobs:
           mingw-w64-i686-cmake
           mingw-w64-i686-gcc
           mingw-w64-i686-libgomp
-          mingw-w64-i686-glib2
     - shell: msys2 {0}
       run: |
         uname -a
@@ -33,7 +32,8 @@ jobs:
         gcc -shared -O2 -o bin/stb_image.dll tools/stb_image_dll.c
         for dll in \
           libbrotlicommon.dll libbrotlidec.dll libbz2-1.dll libfreetype-6.dll \
-          libgcc_s_dw2-1.dll libglib-2.0-0.dll libgraphite2.dll libharfbuzz-0.dll \
+          libffi-8.dll libgcc_s_dw2-1.dll libglib-2.0-0.dll libgraphite2.dll \
+          libharfbuzz-0.dll libiconv-2.dll libintl-8.dll libpcre2-8-0.dll \
           libpng16-16.dll libsamplerate-0.dll libstdc++-6.dll zlib1.dll; do
           test -f "bin/$dll" || { echo "Missing required 32-bit dependency: $dll"; exit 1; }
         done

@@ -33,6 +33,21 @@ install_archived_package \
   mingw-w64-i686-zlib-1.4-2-any.pkg.tar.zst \
   d388d6147ef523b06fbea758f130cfed821818749f9364a4bf21554732110f10
 install_archived_package \
+  mingw-w64-i686-libiconv-1.19.1-1-any.pkg.tar.zst \
+  8a964a13dfef42c867e55706f70741b0bd392e12a3531399c7ede8754f3a8900
+install_archived_package \
+  mingw-w64-i686-gettext-runtime-1.0-1-any.pkg.tar.zst \
+  b096eb69be4710c74e1a568f8a6fc05acdaf5fd1cccdf3ba10b62bc74df1dde3
+install_archived_package \
+  mingw-w64-i686-libffi-3.8.0-1-any.pkg.tar.zst \
+  81693922f14ab53d9d3fae6ba737d4e78bdeb30f0e7546399e26b07763c1d6b0
+install_archived_package \
+  mingw-w64-i686-pcre2-10.49-2-any.pkg.tar.zst \
+  e1df5e210ee8b42ed2c9d0fd2068f86e5cc6e58264359c86e4ad7e523c5d315e
+install_archived_package \
+  mingw-w64-i686-glib2-2.90.1-1-any.pkg.tar.zst \
+  7e353a53cb9d7f53f4743719dde56b4ab097836671ffc5b0b736629de0f6cebb
+install_archived_package \
   mingw-w64-i686-freetype-2.15.0-1-any.pkg.tar.zst \
   527edf8bc431e9e436f1c9b74fbab01b4646b0c725bd6f9523bd73189b61e5c4
 install_archived_package \
