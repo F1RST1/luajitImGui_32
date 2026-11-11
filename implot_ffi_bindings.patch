@@ -84,7 +84,10 @@ index 452cce8..ed6fcb1 100644
  end
  function M.ImPlot_PlotLine_doublePtrdoublePtr(label_id,xs,ys,count,spec)
      spec = spec or M.ImPlotSpec()[0]
-@@ -4994,7 +5003,9 @@ function M.ImPlot_PlotLineG(label_id,getter,data,count,spec)
+@@ -4991,9 +5000,10 @@ function M.ImPlot_PlotLineG(label_id,getter,data,count,spec)
+-    spec = spec or M.ImPlotSpec()[0]
+-    return lib.ImPlot_PlotLineG(label_id,getter,data,count,spec)
++    return M.ImPlot_PlotLineG_LJ(label_id,getter,data,count,spec)
  end
  function M.ImPlot_PlotLineG_LJ(label_id,getter,data,count,spec)
      spec = spec or M.ImPlotSpec()[0]
@@ -133,7 +136,10 @@ index ceaa9d6..b0d090b 100644
  end
  function M.ImPlot_PlotLine_doublePtrdoublePtr(label_id,xs,ys,count,spec)
      spec = spec or M.ImPlotSpec()[0]
-@@ -4961,7 +4970,9 @@ function M.ImPlot_PlotLineG(label_id,getter,data,count,spec)
+@@ -4958,9 +4967,10 @@ function M.ImPlot_PlotLineG(label_id,getter,data,count,spec)
+-    spec = spec or M.ImPlotSpec()[0]
+-    return lib.ImPlot_PlotLineG(label_id,getter,data,count,spec)
++    return M.ImPlot_PlotLineG_LJ(label_id,getter,data,count,spec)
  end
  function M.ImPlot_PlotLineG_LJ(label_id,getter,data,count,spec)
      spec = spec or M.ImPlotSpec()[0]
@@ -182,7 +188,10 @@ index 28b2e57..c84e207 100644
  end
  function M.ImPlot_PlotLine_doublePtrdoublePtr(label_id,xs,ys,count,spec)
      spec = spec or M.ImPlotSpec()[0]
-@@ -4961,7 +4970,9 @@ function M.ImPlot_PlotLineG(label_id,getter,data,count,spec)
+@@ -4958,9 +4967,10 @@ function M.ImPlot_PlotLineG(label_id,getter,data,count,spec)
+-    spec = spec or M.ImPlotSpec()[0]
+-    return lib.ImPlot_PlotLineG(label_id,getter,data,count,spec)
++    return M.ImPlot_PlotLineG_LJ(label_id,getter,data,count,spec)
  end
  function M.ImPlot_PlotLineG_LJ(label_id,getter,data,count,spec)
      spec = spec or M.ImPlotSpec()[0]

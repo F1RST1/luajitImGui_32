@@ -78,9 +78,15 @@ Differencies from [anima](https://github.com/sonoro1234/anima) project are as fo
 
 [implot3d_sample.lua](bin/examples/LuaJIT-ImGui/examples/implot3d_sample.lua) [^note]
 
-The sample's float-array and getter-based ImPlot line calls use pointer-based C wrappers
-for LuaJIT compatibility. Rebuild the native DLLs with `make main_build` to use them;
-the build applies the binding patch automatically.
+The samples' float-array ImPlot and ImPlot3D line calls, and getter-based ImPlot line
+calls, use pointer-based C wrappers for LuaJIT compatibility. Rebuild the native DLLs
+with `make main_build` to use them;
+the build applies the binding patch automatically and installs the DLLs and Lua bindings
+to `bin` by default. Run the sample from `bin/examples/LuaJIT-ImGui/examples` so it uses
+that matching runtime. To install into a different LuaJIT root, pass its path as
+`INSTALL_DIR`, for example `make main_build INSTALL_DIR=G:/desktop/32b`. The DLL,
+`lua/imgui` bindings, and `luajit.exe` used at runtime must all come from the same
+installation; an older Lua module calls the unsupported by-value function directly.
 
 ![alt](examples/img/cimplot3d.gif)
 

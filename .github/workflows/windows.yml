@@ -27,6 +27,16 @@ jobs:
       run: |
         uname -a
         make .build main_build make_luajitw tools_build copy_dll TC=gcc CPU_CORE_BITS=32bit DLL_SOURCE_DIR=/mingw32/bin FREETYPE_DLL_SOURCE_DIR=/mingw32/bin RESOURCE_FILE=res/rscVcc.res
+        for dll in bin/cimgui_glfw.dll bin/cimgui_sdl.dll bin/cimgui_sdl3.dll; do
+          for symbol in ImPlot_PlotLineG_Ptr ImPlot_PlotLine_FloatPtrFloatPtr_Ptr ImPlot3D_PlotLine_FloatPtr_Ptr; do
+            objdump -p "$dll" | grep -q "$symbol" || { echo "Missing $symbol in $dll"; exit 1; }
+          done
+        done
+        grep -Fq 'return M.ImPlot_PlotLineG_LJ(label_id,getter,data,count,spec)' bin/lua/imgui/glfw.lua
+        grep -Fq 'int ImPlot_PlotLineG_Ptr(' bin/lua/imgui/cdefs.lua
+        grep -Fq 'return check_plot_shim(lib.ImPlot3D_PlotLine_FloatPtr_Ptr(label_id,xs,ys,zs,count,spec_ptr))' bin/lua/imgui/glfw.lua
+        grep -Fq 'return M.ImPlot3D_PlotLine_FloatPtr(a1,a2,a3,a4,a5,a6)' bin/lua/imgui/glfw.lua
+        grep -Fq 'int ImPlot3D_PlotLine_FloatPtr_Ptr(' bin/lua/imgui/cdefs.lua
     - uses: actions/upload-artifact@v4
       with:
         name: luajit-imgui-windows-32bit

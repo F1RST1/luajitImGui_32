@@ -4998,8 +4998,7 @@ function M.ImPlot_PlotLine(a1,a2,a3,a4,a5,a6) -- generic version
     error'M.ImPlot_PlotLine could not find overloaded'
 end
 function M.ImPlot_PlotLineG(label_id,getter,data,count,spec)
-    spec = spec or M.ImPlotSpec()[0]
-    return lib.ImPlot_PlotLineG(label_id,getter,data,count,spec)
+    return M.ImPlot_PlotLineG_LJ(label_id,getter,data,count,spec)
 end
 function M.ImPlot_PlotLineG_LJ(label_id,getter,data,count,spec)
     spec = spec or M.ImPlotSpec()[0]
