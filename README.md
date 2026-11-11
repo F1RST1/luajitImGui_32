@@ -286,7 +286,12 @@ https://cmake.org/download/
    pacman -S mingw-w64-ucrt-x86_64-{gcc,clang,llvm-openmp} patch make git
   ```
 
-- Build **on MSys2 console**,
+- The 32-bit Windows CI build uses the `MINGW32` environment and installs the
+  `mingw-w64-i686` FreeType, libsamplerate, and stb packages. It rebuilds
+  `stb_image.dll` with the 32-bit compiler, removes stale DLLs before packaging,
+  and checks that every packaged DLL is x86.
+
+- Build **on MSYS2 console**,
 
    ```sh
    git clone --depth 1 --recurse-submodules https://github.com/dinau/luajitImGui
