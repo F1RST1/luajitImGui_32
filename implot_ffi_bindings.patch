@@ -1,0 +1,195 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 3854ffc..4b4d9e0 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -8,6 +8,7 @@ endif(WIN32)
+ #general settings
+ include_directories(cimgui/imgui)
+ include_directories(cimplot/implot)
++include_directories(cimplot cimplot3d)
+ include_directories(cimguizmo/ImGuizmo)
+ include_directories(./cimguizmo_quat/imGuIZMO.quat/imguizmo_quat)
+ include_directories(cimnodes/imnodes)
+@@ -41,6 +42,7 @@ set(IMGUI_SOURCES ./cimgui/cimgui.cpp
+ ./cimplot3d/implot3d/implot3d_items.cpp
+ ./cimplot3d/implot3d/implot3d_meshes.cpp
+ ${cimCTE_SRCS}
++${CMAKE_CURRENT_LIST_DIR}/../../implot_ffi_shim.cpp
+ )
+ 
+ if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cimgui/imgui/imgui_tables.cpp)
+diff --git a/lua/imgui/cdefs.lua b/lua/imgui/cdefs.lua
+index 13a436e..b357a6f 100644
+--- a/lua/imgui/cdefs.lua
++++ b/lua/imgui/cdefs.lua
+@@ -6198,6 +6198,7 @@ void ImPlot_PlotLine_U32PtrInt(const char* label_id,const ImU32* values,int coun
+ void ImPlot_PlotLine_S64PtrInt(const char* label_id,const ImS64* values,int count,double xscale,double xstart,const ImPlotSpec_c spec);
+ void ImPlot_PlotLine_U64PtrInt(const char* label_id,const ImU64* values,int count,double xscale,double xstart,const ImPlotSpec_c spec);
+ void ImPlot_PlotLine_FloatPtrFloatPtr(const char* label_id,const float* xs,const float* ys,int count,const ImPlotSpec_c spec);
++int ImPlot_PlotLine_FloatPtrFloatPtr_Ptr(const char* label_id,const float* xs,const float* ys,int count,const ImPlotSpec_c* spec);
+ void ImPlot_PlotLine_doublePtrdoublePtr(const char* label_id,const double* xs,const double* ys,int count,const ImPlotSpec_c spec);
+ void ImPlot_PlotLine_S8PtrS8Ptr(const char* label_id,const ImS8* xs,const ImS8* ys,int count,const ImPlotSpec_c spec);
+ void ImPlot_PlotLine_U8PtrU8Ptr(const char* label_id,const ImU8* xs,const ImU8* ys,int count,const ImPlotSpec_c spec);
+@@ -6208,6 +6209,7 @@ void ImPlot_PlotLine_U32PtrU32Ptr(const char* label_id,const ImU32* xs,const ImU
+ void ImPlot_PlotLine_S64PtrS64Ptr(const char* label_id,const ImS64* xs,const ImS64* ys,int count,const ImPlotSpec_c spec);
+ void ImPlot_PlotLine_U64PtrU64Ptr(const char* label_id,const ImU64* xs,const ImU64* ys,int count,const ImPlotSpec_c spec);
+ void ImPlot_PlotLineG_LJ(const char* label_id,ImPlotPoint_getter getter,void* data,int count,const ImPlotSpec_c spec);
++int ImPlot_PlotLineG_Ptr(const char* label_id,ImPlotPoint_getter getter,void* data,int count,const ImPlotSpec_c* spec);
+ void ImPlot_PlotLineG(const char* label_id,ImPlotGetter getter,void* data,int count,const ImPlotSpec_c spec);
+ void ImPlot_PlotScatter_FloatPtrInt(const char* label_id,const float* values,int count,double xscale,double xstart,const ImPlotSpec_c spec);
+ void ImPlot_PlotScatter_doublePtrInt(const char* label_id,const double* values,int count,double xscale,double xstart,const ImPlotSpec_c spec);
+@@ -7910,6 +7912,7 @@ void ImPlot3D_PlotScatter_U32Ptr(const char* label_id,const ImU32* xs,const ImU3
+ void ImPlot3D_PlotScatter_S64Ptr(const char* label_id,const ImS64* xs,const ImS64* ys,const ImS64* zs,int count,const ImPlot3DSpec_c spec);
+ void ImPlot3D_PlotScatter_U64Ptr(const char* label_id,const ImU64* xs,const ImU64* ys,const ImU64* zs,int count,const ImPlot3DSpec_c spec);
+ void ImPlot3D_PlotLine_FloatPtr(const char* label_id,const float* xs,const float* ys,const float* zs,int count,const ImPlot3DSpec_c spec);
++int ImPlot3D_PlotLine_FloatPtr_Ptr(const char* label_id,const float* xs,const float* ys,const float* zs,int count,const ImPlot3DSpec_c* spec);
+ void ImPlot3D_PlotLine_doublePtr(const char* label_id,const double* xs,const double* ys,const double* zs,int count,const ImPlot3DSpec_c spec);
+ void ImPlot3D_PlotLine_S8Ptr(const char* label_id,const ImS8* xs,const ImS8* ys,const ImS8* zs,int count,const ImPlot3DSpec_c spec);
+ void ImPlot3D_PlotLine_U8Ptr(const char* label_id,const ImU8* xs,const ImU8* ys,const ImU8* zs,int count,const ImPlot3DSpec_c spec);
+diff --git a/lua/imgui/glfw.lua b/lua/imgui/glfw.lua
+index 452cce8..ed6fcb1 100644
+--- a/lua/imgui/glfw.lua
++++ b/lua/imgui/glfw.lua
+@@ -63,6 +63,11 @@ ImVec4.__index = ImVec4
+ ImVec4 = ffi.metatype("ImVec4",ImVec4)
+ --the module
+ local M = {ImVec2 = ImVec2, ImVec4 = ImVec4 , ImStrv = ImStrv, lib = lib}
++local function check_plot_shim(result)
++    if result ~= 0 then
++        error("ImPlot compatibility wrapper failed with code " .. tonumber(result), 2)
++    end
++end
+ 
+ if jit.os == "Windows" then
+     function M.ToUTF(unc_str)
+@@ -2930,7 +2935,9 @@ function M.ImPlot3D_PlotImage(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12) -- generic
+ end
+ function M.ImPlot3D_PlotLine_FloatPtr(label_id,xs,ys,zs,count,spec)
+     spec = spec or M.ImPlot3DSpec()[0]
+-    return lib.ImPlot3D_PlotLine_FloatPtr(label_id,xs,ys,zs,count,spec)
++    local spec_ptr = ffi.new("ImPlot3DSpec_c[1]")
++    spec_ptr[0] = spec
++    return check_plot_shim(lib.ImPlot3D_PlotLine_FloatPtr_Ptr(label_id,xs,ys,zs,count,spec_ptr))
+ end
+ function M.ImPlot3D_PlotLine_doublePtr(label_id,xs,ys,zs,count,spec)
+     spec = spec or M.ImPlot3DSpec()[0]
+@@ -4926,7 +4933,9 @@ function M.ImPlot_PlotLine_U64PtrInt(label_id,values,count,xscale,xstart,spec)
+ end
+ function M.ImPlot_PlotLine_FloatPtrFloatPtr(label_id,xs,ys,count,spec)
+     spec = spec or M.ImPlotSpec()[0]
+-    return lib.ImPlot_PlotLine_FloatPtrFloatPtr(label_id,xs,ys,count,spec)
++    local spec_ptr = ffi.new("ImPlotSpec_c[1]")
++    spec_ptr[0] = spec
++    return check_plot_shim(lib.ImPlot_PlotLine_FloatPtrFloatPtr_Ptr(label_id,xs,ys,count,spec_ptr))
+ end
+ function M.ImPlot_PlotLine_doublePtrdoublePtr(label_id,xs,ys,count,spec)
+     spec = spec or M.ImPlotSpec()[0]
+@@ -4994,7 +5003,9 @@ function M.ImPlot_PlotLineG(label_id,getter,data,count,spec)
+ end
+ function M.ImPlot_PlotLineG_LJ(label_id,getter,data,count,spec)
+     spec = spec or M.ImPlotSpec()[0]
+-    return lib.ImPlot_PlotLineG_LJ(label_id,getter,data,count,spec)
++    local spec_ptr = ffi.new("ImPlotSpec_c[1]")
++    spec_ptr[0] = spec
++    return check_plot_shim(lib.ImPlot_PlotLineG_Ptr(label_id,getter,data,count,spec_ptr))
+ end
+ function M.ImPlot_PlotPieChart_FloatPtrPlotFormatter(label_ids,values,count,x,y,radius,fmt,fmt_data,angle0,spec)
+     angle0 = angle0 or 90
+diff --git a/lua/imgui/sdl.lua b/lua/imgui/sdl.lua
+index ceaa9d6..b0d090b 100644
+--- a/lua/imgui/sdl.lua
++++ b/lua/imgui/sdl.lua
+@@ -63,6 +63,11 @@ ImVec4.__index = ImVec4
+ ImVec4 = ffi.metatype("ImVec4",ImVec4)
+ --the module
+ local M = {ImVec2 = ImVec2, ImVec4 = ImVec4 , ImStrv = ImStrv, lib = lib}
++local function check_plot_shim(result)
++    if result ~= 0 then
++        error("ImPlot compatibility wrapper failed with code " .. tonumber(result), 2)
++    end
++end
+ 
+ if jit.os == "Windows" then
+     function M.ToUTF(unc_str)
+@@ -2897,7 +2902,9 @@ function M.ImPlot3D_PlotImage(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12) -- generic
+ end
+ function M.ImPlot3D_PlotLine_FloatPtr(label_id,xs,ys,zs,count,spec)
+     spec = spec or M.ImPlot3DSpec()[0]
+-    return lib.ImPlot3D_PlotLine_FloatPtr(label_id,xs,ys,zs,count,spec)
++    local spec_ptr = ffi.new("ImPlot3DSpec_c[1]")
++    spec_ptr[0] = spec
++    return check_plot_shim(lib.ImPlot3D_PlotLine_FloatPtr_Ptr(label_id,xs,ys,zs,count,spec_ptr))
+ end
+ function M.ImPlot3D_PlotLine_doublePtr(label_id,xs,ys,zs,count,spec)
+     spec = spec or M.ImPlot3DSpec()[0]
+@@ -4893,7 +4900,9 @@ function M.ImPlot_PlotLine_U64PtrInt(label_id,values,count,xscale,xstart,spec)
+ end
+ function M.ImPlot_PlotLine_FloatPtrFloatPtr(label_id,xs,ys,count,spec)
+     spec = spec or M.ImPlotSpec()[0]
+-    return lib.ImPlot_PlotLine_FloatPtrFloatPtr(label_id,xs,ys,count,spec)
++    local spec_ptr = ffi.new("ImPlotSpec_c[1]")
++    spec_ptr[0] = spec
++    return check_plot_shim(lib.ImPlot_PlotLine_FloatPtrFloatPtr_Ptr(label_id,xs,ys,count,spec_ptr))
+ end
+ function M.ImPlot_PlotLine_doublePtrdoublePtr(label_id,xs,ys,count,spec)
+     spec = spec or M.ImPlotSpec()[0]
+@@ -4961,7 +4970,9 @@ function M.ImPlot_PlotLineG(label_id,getter,data,count,spec)
+ end
+ function M.ImPlot_PlotLineG_LJ(label_id,getter,data,count,spec)
+     spec = spec or M.ImPlotSpec()[0]
+-    return lib.ImPlot_PlotLineG_LJ(label_id,getter,data,count,spec)
++    local spec_ptr = ffi.new("ImPlotSpec_c[1]")
++    spec_ptr[0] = spec
++    return check_plot_shim(lib.ImPlot_PlotLineG_Ptr(label_id,getter,data,count,spec_ptr))
+ end
+ function M.ImPlot_PlotPieChart_FloatPtrPlotFormatter(label_ids,values,count,x,y,radius,fmt,fmt_data,angle0,spec)
+     angle0 = angle0 or 90
+diff --git a/lua/imgui/sdl3.lua b/lua/imgui/sdl3.lua
+index 28b2e57..c84e207 100644
+--- a/lua/imgui/sdl3.lua
++++ b/lua/imgui/sdl3.lua
+@@ -63,6 +63,11 @@ ImVec4.__index = ImVec4
+ ImVec4 = ffi.metatype("ImVec4",ImVec4)
+ --the module
+ local M = {ImVec2 = ImVec2, ImVec4 = ImVec4 , ImStrv = ImStrv, lib = lib}
++local function check_plot_shim(result)
++    if result ~= 0 then
++        error("ImPlot compatibility wrapper failed with code " .. tonumber(result), 2)
++    end
++end
+ 
+ if jit.os == "Windows" then
+     function M.ToUTF(unc_str)
+@@ -2897,7 +2902,9 @@ function M.ImPlot3D_PlotImage(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12) -- generic
+ end
+ function M.ImPlot3D_PlotLine_FloatPtr(label_id,xs,ys,zs,count,spec)
+     spec = spec or M.ImPlot3DSpec()[0]
+-    return lib.ImPlot3D_PlotLine_FloatPtr(label_id,xs,ys,zs,count,spec)
++    local spec_ptr = ffi.new("ImPlot3DSpec_c[1]")
++    spec_ptr[0] = spec
++    return check_plot_shim(lib.ImPlot3D_PlotLine_FloatPtr_Ptr(label_id,xs,ys,zs,count,spec_ptr))
+ end
+ function M.ImPlot3D_PlotLine_doublePtr(label_id,xs,ys,zs,count,spec)
+     spec = spec or M.ImPlot3DSpec()[0]
+@@ -4893,7 +4900,9 @@ function M.ImPlot_PlotLine_U64PtrInt(label_id,values,count,xscale,xstart,spec)
+ end
+ function M.ImPlot_PlotLine_FloatPtrFloatPtr(label_id,xs,ys,count,spec)
+     spec = spec or M.ImPlotSpec()[0]
+-    return lib.ImPlot_PlotLine_FloatPtrFloatPtr(label_id,xs,ys,count,spec)
++    local spec_ptr = ffi.new("ImPlotSpec_c[1]")
++    spec_ptr[0] = spec
++    return check_plot_shim(lib.ImPlot_PlotLine_FloatPtrFloatPtr_Ptr(label_id,xs,ys,count,spec_ptr))
+ end
+ function M.ImPlot_PlotLine_doublePtrdoublePtr(label_id,xs,ys,count,spec)
+     spec = spec or M.ImPlotSpec()[0]
+@@ -4961,7 +4970,9 @@ function M.ImPlot_PlotLineG(label_id,getter,data,count,spec)
+ end
+ function M.ImPlot_PlotLineG_LJ(label_id,getter,data,count,spec)
+     spec = spec or M.ImPlotSpec()[0]
+-    return lib.ImPlot_PlotLineG_LJ(label_id,getter,data,count,spec)
++    local spec_ptr = ffi.new("ImPlotSpec_c[1]")
++    spec_ptr[0] = spec
++    return check_plot_shim(lib.ImPlot_PlotLineG_Ptr(label_id,getter,data,count,spec_ptr))
+ end
+ function M.ImPlot_PlotPieChart_FloatPtrPlotFormatter(label_ids,values,count,x,y,radius,fmt,fmt_data,angle0,spec)
+     angle0 = angle0 or 90

@@ -78,6 +78,10 @@ Differencies from [anima](https://github.com/sonoro1234/anima) project are as fo
 
 [implot3d_sample.lua](bin/examples/LuaJIT-ImGui/examples/implot3d_sample.lua) [^note]
 
+The sample's float-array and getter-based ImPlot line calls use pointer-based C wrappers
+for LuaJIT compatibility. Rebuild the native DLLs with `make main_build` to use them;
+the build applies the binding patch automatically.
+
 ![alt](examples/img/cimplot3d.gif)
 
 ##### glfw_opengl3_simple

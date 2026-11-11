@@ -63,6 +63,11 @@ ImVec4.__index = ImVec4
 ImVec4 = ffi.metatype("ImVec4",ImVec4)
 --the module
 local M = {ImVec2 = ImVec2, ImVec4 = ImVec4 , ImStrv = ImStrv, lib = lib}
+local function check_plot_shim(result)
+    if result ~= 0 then
+        error("ImPlot compatibility wrapper failed with code " .. tonumber(result), 2)
+    end
+end
 
 if jit.os == "Windows" then
     function M.ToUTF(unc_str)
@@ -2930,7 +2935,9 @@ function M.ImPlot3D_PlotImage(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12) -- generic
 end
 function M.ImPlot3D_PlotLine_FloatPtr(label_id,xs,ys,zs,count,spec)
     spec = spec or M.ImPlot3DSpec()[0]
-    return lib.ImPlot3D_PlotLine_FloatPtr(label_id,xs,ys,zs,count,spec)
+    local spec_ptr = ffi.new("ImPlot3DSpec_c[1]")
+    spec_ptr[0] = spec
+    return check_plot_shim(lib.ImPlot3D_PlotLine_FloatPtr_Ptr(label_id,xs,ys,zs,count,spec_ptr))
 end
 function M.ImPlot3D_PlotLine_doublePtr(label_id,xs,ys,zs,count,spec)
     spec = spec or M.ImPlot3DSpec()[0]
@@ -4926,7 +4933,9 @@ function M.ImPlot_PlotLine_U64PtrInt(label_id,values,count,xscale,xstart,spec)
 end
 function M.ImPlot_PlotLine_FloatPtrFloatPtr(label_id,xs,ys,count,spec)
     spec = spec or M.ImPlotSpec()[0]
-    return lib.ImPlot_PlotLine_FloatPtrFloatPtr(label_id,xs,ys,count,spec)
+    local spec_ptr = ffi.new("ImPlotSpec_c[1]")
+    spec_ptr[0] = spec
+    return check_plot_shim(lib.ImPlot_PlotLine_FloatPtrFloatPtr_Ptr(label_id,xs,ys,count,spec_ptr))
 end
 function M.ImPlot_PlotLine_doublePtrdoublePtr(label_id,xs,ys,count,spec)
     spec = spec or M.ImPlotSpec()[0]
@@ -4994,7 +5003,9 @@ function M.ImPlot_PlotLineG(label_id,getter,data,count,spec)
 end
 function M.ImPlot_PlotLineG_LJ(label_id,getter,data,count,spec)
     spec = spec or M.ImPlotSpec()[0]
-    return lib.ImPlot_PlotLineG_LJ(label_id,getter,data,count,spec)
+    local spec_ptr = ffi.new("ImPlotSpec_c[1]")
+    spec_ptr[0] = spec
+    return check_plot_shim(lib.ImPlot_PlotLineG_Ptr(label_id,getter,data,count,spec_ptr))
 end
 function M.ImPlot_PlotPieChart_FloatPtrPlotFormatter(label_ids,values,count,x,y,radius,fmt,fmt_data,angle0,spec)
     angle0 = angle0 or 90

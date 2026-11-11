@@ -6197,6 +6197,7 @@ void ImPlot_PlotLine_U32PtrInt(const char* label_id,const ImU32* values,int coun
 void ImPlot_PlotLine_S64PtrInt(const char* label_id,const ImS64* values,int count,double xscale,double xstart,const ImPlotSpec_c spec);
 void ImPlot_PlotLine_U64PtrInt(const char* label_id,const ImU64* values,int count,double xscale,double xstart,const ImPlotSpec_c spec);
 void ImPlot_PlotLine_FloatPtrFloatPtr(const char* label_id,const float* xs,const float* ys,int count,const ImPlotSpec_c spec);
+int ImPlot_PlotLine_FloatPtrFloatPtr_Ptr(const char* label_id,const float* xs,const float* ys,int count,const ImPlotSpec_c* spec);
 void ImPlot_PlotLine_doublePtrdoublePtr(const char* label_id,const double* xs,const double* ys,int count,const ImPlotSpec_c spec);
 void ImPlot_PlotLine_S8PtrS8Ptr(const char* label_id,const ImS8* xs,const ImS8* ys,int count,const ImPlotSpec_c spec);
 void ImPlot_PlotLine_U8PtrU8Ptr(const char* label_id,const ImU8* xs,const ImU8* ys,int count,const ImPlotSpec_c spec);
@@ -6207,6 +6208,7 @@ void ImPlot_PlotLine_U32PtrU32Ptr(const char* label_id,const ImU32* xs,const ImU
 void ImPlot_PlotLine_S64PtrS64Ptr(const char* label_id,const ImS64* xs,const ImS64* ys,int count,const ImPlotSpec_c spec);
 void ImPlot_PlotLine_U64PtrU64Ptr(const char* label_id,const ImU64* xs,const ImU64* ys,int count,const ImPlotSpec_c spec);
 void ImPlot_PlotLineG_LJ(const char* label_id,ImPlotPoint_getter getter,void* data,int count,const ImPlotSpec_c spec);
+int ImPlot_PlotLineG_Ptr(const char* label_id,ImPlotPoint_getter getter,void* data,int count,const ImPlotSpec_c* spec);
 void ImPlot_PlotLineG(const char* label_id,ImPlotGetter getter,void* data,int count,const ImPlotSpec_c spec);
 void ImPlot_PlotScatter_FloatPtrInt(const char* label_id,const float* values,int count,double xscale,double xstart,const ImPlotSpec_c spec);
 void ImPlot_PlotScatter_doublePtrInt(const char* label_id,const double* values,int count,double xscale,double xstart,const ImPlotSpec_c spec);
@@ -7909,6 +7911,7 @@ void ImPlot3D_PlotScatter_U32Ptr(const char* label_id,const ImU32* xs,const ImU3
 void ImPlot3D_PlotScatter_S64Ptr(const char* label_id,const ImS64* xs,const ImS64* ys,const ImS64* zs,int count,const ImPlot3DSpec_c spec);
 void ImPlot3D_PlotScatter_U64Ptr(const char* label_id,const ImU64* xs,const ImU64* ys,const ImU64* zs,int count,const ImPlot3DSpec_c spec);
 void ImPlot3D_PlotLine_FloatPtr(const char* label_id,const float* xs,const float* ys,const float* zs,int count,const ImPlot3DSpec_c spec);
+int ImPlot3D_PlotLine_FloatPtr_Ptr(const char* label_id,const float* xs,const float* ys,const float* zs,int count,const ImPlot3DSpec_c* spec);
 void ImPlot3D_PlotLine_doublePtr(const char* label_id,const double* xs,const double* ys,const double* zs,int count,const ImPlot3DSpec_c spec);
 void ImPlot3D_PlotLine_S8Ptr(const char* label_id,const ImS8* xs,const ImS8* ys,const ImS8* zs,int count,const ImPlot3DSpec_c spec);
 void ImPlot3D_PlotLine_U8Ptr(const char* label_id,const ImU8* xs,const ImU8* ys,const ImU8* zs,int count,const ImPlot3DSpec_c spec);

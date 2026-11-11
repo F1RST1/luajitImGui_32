@@ -89,17 +89,21 @@ endif
 
 BUILD_DIR = .build
 
-.PHONY: main_build tools_build copy_dll build clean $(INSTALL_DIR) update zip patch rpatch luajitw
+.PHONY: main_build implot_ffi_bindings tools_build copy_dll build clean $(INSTALL_DIR) update zip patch rpatch luajitw
 
 all: $(INSTALL_DIR) $(BUILD_DIR) main_build tools_build make_luajitw copy_dll
 
-main_build:
+main_build: implot_ffi_bindings
 	(cd $(BUILD_DIR); \
 	CMAKE_POLICY_DEFAULT_CMP0000=OLD \
 	CMAKE_POLICY_VERSION_MINIMUM=3.5 \
 	cmake ../anima $(BUILD_OPT) )
 	(cd $(BUILD_DIR); $(BUILD_INSTALL_CMD) )
 	@-strip bin/*.dll bin/*.exe
+
+implot_ffi_bindings:
+	@patch --reverse --dry-run --batch -p1 -d anima/LuaJIT-ImGui < implot_ffi_bindings.patch >/dev/null 2>&1 || \
+		patch --forward --batch -p1 -d anima/LuaJIT-ImGui < implot_ffi_bindings.patch
 
 TOOLS_DIR = examples/tools
 
