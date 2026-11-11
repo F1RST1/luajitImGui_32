@@ -23,18 +23,22 @@ jobs:
           mingw-w64-i686-cmake
           mingw-w64-i686-gcc
           mingw-w64-i686-libgomp
-          mingw-w64-i686-freetype
-          mingw-w64-i686-libsamplerate
-          mingw-w64-i686-stb
+          mingw-w64-i686-glib2
     - shell: msys2 {0}
       run: |
         uname -a
+        bash tools/install_i686_archived_packages.sh
         rm -f bin/*.dll
         make .build main_build make_luajitw tools_build copy_dll TC=gcc CPU_CORE_BITS=32bit DLL_SOURCE_DIR=/mingw32/bin FREETYPE_DLL_SOURCE_DIR=/mingw32/bin RESOURCE_FILE=res/rscVcc.res
         gcc -shared -O2 -o bin/stb_image.dll tools/stb_image_dll.c
-        for dll in libfreetype-6.dll libgcc_s_dw2-1.dll libglib-2.0-0.dll libgraphite2.dll libharfbuzz-0.dll libpng16-16.dll libsamplerate-0.dll; do
+        for dll in \
+          libbrotlicommon.dll libbrotlidec.dll libbz2-1.dll libfreetype-6.dll \
+          libgcc_s_dw2-1.dll libglib-2.0-0.dll libgraphite2.dll libharfbuzz-0.dll \
+          libpng16-16.dll libsamplerate-0.dll libstdc++-6.dll zlib1.dll; do
           test -f "bin/$dll" || { echo "Missing required 32-bit dependency: $dll"; exit 1; }
         done
+        test -f /mingw32/include/freetype2/ft2build.h
+        test -f /mingw32/include/stb/stb_image.h
         for dll in bin/*.dll; do
           objdump -f "$dll" | grep -Eq 'architecture: i386([,[:space:]]|$)' || { echo "Not a 32-bit DLL: $dll"; exit 1; }
         done
