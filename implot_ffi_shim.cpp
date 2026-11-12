@@ -1,3 +1,7 @@
+#ifdef ImDrawIdx
+#undef ImDrawIdx
+#endif
+
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include "cimplot.h"
 #include "cimplot3d.h"
