@@ -102,8 +102,7 @@ main_build: implot_ffi_bindings
 	@-strip bin/*.dll bin/*.exe
 
 implot_ffi_bindings:
-	@patch --reverse --dry-run --batch -p1 -d anima/LuaJIT-ImGui < implot_ffi_bindings.patch >/dev/null 2>&1 || \
-		patch --forward --batch -p1 -d anima/LuaJIT-ImGui < implot_ffi_bindings.patch
+	@if [ "$$(grep -Fc 'implot_ffi_shim.cpp' anima/LuaJIT-ImGui/CMakeLists.txt)" -ne 3 ]; then patch --forward --batch -p1 -d anima/LuaJIT-ImGui < implot_ffi_bindings.patch; fi
 
 TOOLS_DIR = examples/tools
 

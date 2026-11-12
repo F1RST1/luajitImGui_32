@@ -43,18 +43,23 @@ jobs:
           objdump -f "$dll" | grep -Eq 'architecture: i386([,[:space:]]|$)' || { echo "Not a 32-bit DLL: $dll"; exit 1; }
         done
         objdump -p bin/stb_image.dll | grep -Eq '[[:space:]]stbi_load$' || { echo "Missing stb_image exports"; exit 1; }
-        for dll in bin/cimgui_glfw.dll bin/cimgui_sdl.dll bin/cimgui_sdl3.dll; do
-          for symbol in ImPlot_PlotLineG_Ptr ImPlot_PlotLine_FloatPtrFloatPtr_Ptr ImPlot3D_PlotLine_FloatPtr_Ptr; do
-            objdump -p "$dll" | grep "$symbol" >/dev/null || { echo "Missing $symbol in $dll"; exit 1; }
-          done
-        done
-        grep -Fq 'return M.ImPlot_PlotLineG_LJ(label_id,getter,data,count,spec)' bin/lua/imgui/glfw.lua
-        grep -Fq 'int ImPlot_PlotLineG_Ptr(' bin/lua/imgui/cdefs.lua
-        grep -Fq 'return check_plot_shim(lib.ImPlot3D_PlotLine_FloatPtr_Ptr(label_id,xs,ys,zs,count,spec_ptr))' bin/lua/imgui/glfw.lua
-        grep -Fq 'return M.ImPlot3D_PlotLine_FloatPtr(a1,a2,a3,a4,a5,a6)' bin/lua/imgui/glfw.lua
-        grep -Fq 'int ImPlot3D_PlotLine_FloatPtr_Ptr(' bin/lua/imgui/cdefs.lua
     - uses: actions/upload-artifact@v4
       with:
         name: luajit-imgui-windows-32bit
         path: bin/
         if-no-files-found: error
+    - name: Check ImPlot exports and bindings
+      shell: msys2 {0}
+      run: |
+        for dll in bin/cimgui_glfw.dll bin/cimgui_sdl.dll bin/cimgui_sdl3.dll; do
+          for symbol in ImPlot_PlotLineG_Ptr ImPlot_PlotLine_FloatPtrFloatPtr_Ptr ImPlot3D_PlotLine_FloatPtr_Ptr; do
+            objdump -p "$dll" | grep -F "$symbol" >/dev/null || { echo "Missing $symbol in $dll"; exit 1; }
+          done
+        done
+        grep -Fq 'return M.ImPlot_PlotLineG_LJ(label_id,getter,data,count,spec)' bin/lua/imgui/glfw.lua
+        grep -Fq 'int ImPlot_PlotLineG_Ptr(' bin/lua/imgui/cdefs.lua
+        grep -Fq 'return check_plot_shim(lib.ImPlot_PlotLine_FloatPtrFloatPtr_Ptr(label_id,xs,ys,count,spec_ptr))' bin/lua/imgui/glfw.lua
+        grep -Fq 'int ImPlot_PlotLine_FloatPtrFloatPtr_Ptr(' bin/lua/imgui/cdefs.lua
+        grep -Fq 'return check_plot_shim(lib.ImPlot3D_PlotLine_FloatPtr_Ptr(label_id,xs,ys,zs,count,spec_ptr))' bin/lua/imgui/glfw.lua
+        grep -Fq 'return M.ImPlot3D_PlotLine_FloatPtr(a1,a2,a3,a4,a5,a6)' bin/lua/imgui/glfw.lua
+        grep -Fq 'int ImPlot3D_PlotLine_FloatPtr_Ptr(' bin/lua/imgui/cdefs.lua
