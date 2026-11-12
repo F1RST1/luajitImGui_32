@@ -10,12 +10,15 @@ index 3854ffc..4b4d9e0 100644
  include_directories(cimguizmo/ImGuizmo)
  include_directories(./cimguizmo_quat/imGuIZMO.quat/imguizmo_quat)
  include_directories(cimnodes/imnodes)
-@@ -41,6 +42,7 @@ set(IMGUI_SOURCES ./cimgui/cimgui.cpp
- ./cimplot3d/implot3d/implot3d_items.cpp
- ./cimplot3d/implot3d/implot3d_meshes.cpp
- ${cimCTE_SRCS}
-+${CMAKE_CURRENT_LIST_DIR}/../../implot_ffi_shim.cpp
- )
+@@ -145,1 +145,1 @@ if(IMPL_GLFW)
+-	add_library(cimgui_glfw SHARED ${IMGUI_SOURCES_glfw} $<TARGET_OBJECTS:cimgui_base>)
++	add_library(cimgui_glfw SHARED ${IMGUI_SOURCES_glfw} $<TARGET_OBJECTS:cimgui_base> ${CMAKE_CURRENT_LIST_DIR}/../../implot_ffi_shim.cpp)
+@@ -175,1 +175,1 @@ if(IMPL_SDL)
+-	add_library(cimgui_sdl SHARED  ${IMGUI_SOURCES_sdl} $<TARGET_OBJECTS:cimgui_base>)
++	add_library(cimgui_sdl SHARED  ${IMGUI_SOURCES_sdl} $<TARGET_OBJECTS:cimgui_base> ${CMAKE_CURRENT_LIST_DIR}/../../implot_ffi_shim.cpp)
+@@ -205,1 +205,1 @@ if(IMPL_SDL3)
+-	add_library(cimgui_sdl3 SHARED  ${IMGUI_SOURCES_sdl3} $<TARGET_OBJECTS:cimgui_base>)
++	add_library(cimgui_sdl3 SHARED  ${IMGUI_SOURCES_sdl3} $<TARGET_OBJECTS:cimgui_base> ${CMAKE_CURRENT_LIST_DIR}/../../implot_ffi_shim.cpp)
  
  if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cimgui/imgui/imgui_tables.cpp)
 diff --git a/lua/imgui/cdefs.lua b/lua/imgui/cdefs.lua
